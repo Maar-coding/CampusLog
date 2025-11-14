@@ -108,11 +108,6 @@
     transition: background-color 0.15s ease, filter 0.15 ease;
 }
 
-.btn_secondary {
-    background-color: #2f80ed;
-    color: #ffffff
-}
-
 .btn_primary {
     background-color: #f2f2f2;
     color: #333333;
