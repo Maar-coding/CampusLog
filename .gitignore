@@ -1,2 +1,4 @@
 .env
 infra/postgres/data
+__pycache__/
+*.pyc
