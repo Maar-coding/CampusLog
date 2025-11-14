@@ -4,11 +4,11 @@
     <meta charset="UTF-8" />
     <title>CampusLog</title>
     <!-- 패널의 css파일 연동 모두 여기서 하기 -->
-    <link rel="stylesheet" href="style.css"/>
-    <link rel="stylesheet" href="component.css"/>
-    <link rel="stylesheet" href="search_panel.css"/>
-    <link rel="stylesheet" href="login_panel.css"/>
-    <link rel="stylesheet" href="register_panel.css">
+    <link rel="stylesheet" href="../../static/web/style.css"/>
+    <link rel="stylesheet" href="../../static/web/component.css"/>
+    <link rel="stylesheet" href="../../static/web/search_panel.css"/>
+    <link rel="stylesheet" href="../../static/web/login_panel.css"/>
+    <link rel="stylesheet" href="../../static/web/register_panel.css">
     <!-- 카카오 Maps API 불러오기 (이동하 개인 키 값) -->
      <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=8d908fe0cb6e1d79f77f01659a40a83e&libraries=services"></script>
 </head>
@@ -17,13 +17,13 @@
     <div id="map"></div>
 
     <div class="filter_case">
-        <img src="./assets/img/restaurant.svg" class="filter_icon">
-        <img src="./assets/img/cafe.svg" class="filter_icon">
-        <img src="./assets/img/play.svg" class="filter_icon">
+        <img src="../../static/img/restaurant.svg" class="filter_icon">
+        <img src="../../static/img/cafe.svg" class="filter_icon">
+        <img src="../../static/img/play.svg" class="filter_icon">
     </div>
 
     <div class="panel_button" onclick="panelButton()">
-        <img src="./assets/img/right_arrow.svg" class="panel_arrow">
+        <img src="../../static/img/right_arrow.svg" class="panel_arrow">
     </div>
 
     <!-- 검색 패널 (component.css) -->
@@ -34,7 +34,7 @@
         // 전역변수 선언
         let map;
         let myMarker;
-        const myImageSrc = "./assets/img/my_marker.svg"; // 내 마커 이미지
+        const myImageSrc = "../../static/img/my_marker.svg"; // 내 마커 이미지
 
 
         // HTMl이 로드 된 다음에 실행 (카카오맵 불러올 때 오류 제거)
