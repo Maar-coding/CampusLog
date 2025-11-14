@@ -1,0 +1,12 @@
+/* 공용 디자인 (많은 페이지에 중복해서 쓰이는 디자인) */
+/* 이 파일에 등록한 요소는 HTML 파일의 해당 요소에 주석 "<!-- (component.css) -->" 남겨주기 */
+#search_panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 375px;
+    height: 100vh;
+    background: transparent; /* 안에 panel_case가 들어오니까 배경은 투명 */
+    z-index: 20;
+    display: none;
+}

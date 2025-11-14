@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Campuslog</title>
+</head>
+<body>
+    <h1>Campuslog (Docker + Django)</h1>
+    <nav>
+    {% if user.is_authenticated %}
+        <p>안녕하세요, {{ user.username }}님!</p>
+        <a href="{% url 'logout' %}">로그아웃</a>
+    {% else %}
+        <p>로그인이 필요합니다.</p>
+        <a href="{% url 'login' %}">로그인</a>
+    {% endif %}
+    </nav>
+    <p>버튼을 눌러서 JavaScript가 작동하는지 확인하세요.</p>
+    
+    <button id="myButton">클릭 하지 마세요!</button>
+
+    <script src="{% static 'web/script.js' %}"></script>
+</body>
+</html>
+

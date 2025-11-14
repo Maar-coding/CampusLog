@@ -1,0 +1,72 @@
+/* 기본 여백 제거 + 전체 높이 사용 */
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+/* 지도 영역을 화면 가득 채우기 */
+#map {
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+}
+
+
+.filter_case {
+    width: 188px;
+    height: 44px;
+    position: fixed;
+    top: 24px;
+    right: 40px;
+
+    display: flex;
+}
+
+.filter_icon {
+    width: 44px;
+    height: 44px;
+    margin-right: 28px;
+}
+
+
+.panel_button {
+    width: 40px;
+    height: 80px;
+    background-color: #ffffff;
+    border-radius: 0 12px 12px 0;
+    position: absolute;
+    top: 50%;
+    transform: translate(0,-50%);
+    left: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.panel_button.open {
+    left: 375px;
+}
+
+/* 패널 버튼 속 화살표 좌우반전 */
+.panel_button img.flipped {
+    transform: scaleX(-1);
+}
+
+
+.panel_case {
+    width: 375px;
+    height: 100vh;
+    background-color: #ffffff;
+    border-radius: 30px;
+    position: relative;
+    z-index: 20;
+    overflow-y: scroll;         /* 세로 스크롤 가능 */
+    scrollbar-width: none;      /* Firefox에서 스크롤바 숨기기 */
+    -ms-overflow-style: none;   /* IE에서 스크롤바 숨기기 */
+}
+
+.panel_case::-webkit-scrollbar {
+    display: none; /* Webkit 기반 브라우저 (Chrome, Safari 등)에서 스크롤바 숨기기 */
+}
+
