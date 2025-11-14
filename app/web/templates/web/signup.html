@@ -1,19 +1,73 @@
-{% block content %}
-    <h2>회원가입</h2>
+<div class="panel_case">
+    <div class="register_inner">
+        <h2 class="register_title">회원가입을 위한 정보를 입력해주세요.</h2>
+        <form class="register_form" method="POST" action="/register">
+            <div class ="form_group">
+                <label for="nickname" class="form_label">닉네임</label>
+                <input type="text" id="nickname" name="nickname" class="form_input" placeholder="닉네임" required/>
+            </div>
+            <div class="form_group">
+                <label for="loginId" class="form_label">아이디</label>
+                <input type="text" id="loginId" name="loginId" class="form_input" placeholder="아이디" required/>
+            </div>
+            <div class="form_group">
+                <label for="password" class="form_label">비밀번호</label>
+                <input type="password" id="password" name="password" class="form_input" placeholder="비밀번호" requred/>
+            </div>
+            <div class="form_group">
+                <label for="passwordConfirm" class="form_label">비밀번호 확인</label>
+                <input type="password" id="passwordConfirm" name="passwordConfirm" class="form_input" placeholder="비밀번호 확인" required/>
+            </div>
 
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li>{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+            <div class ="selection_divider">
+                <span class="section_divider_label">선택 사항</span>
+            </div>
 
-    <form method="post">
-        {% csrf_token %}
+            <div class="form_group">
+                <span class="form_label">직업 (선택)</span>
+                <div class="radio_group">
+                    <label class="radio_item">
+                        <input type="radio" name="job" vlaue="STUDENT" />
+                        <span>학부생</span>
+                    </label>
+                    <label class="radio_item">
+                        <input type="radio" name="job" vlaue="GRAD" />
+                        <span>대학원생</span>
+                    </label>
+                    <label class="radio_item">
+                        <input type="radio" name="job" vlaue="PROFESSOR" />
+                        <span>교수님</span>
+                    </label>
+                </div>
+            </div>
+            <div class="form_group">
+                <span class="form_label">가입 경로</span>
+                <select id="joinPath" name="joinPath" class="form_input form_select">
+                    <option value="">선택</option>
+                    <option value="SEARCH">검색</option>
+                    <option value="AD">광고</option>
+                    <option value="FRIEND">지인 추천</option>
+                    <option value="ETC">기타</option>
+                </select>
+            </div>
 
-        {{ form.as_p }}
+            <p class="form_error" id="registerError" style="display:none;">
+            </p>"
 
-        <button type="submit">회원가입</button>
-    </form>
-{% endblock %}
+            <div class="register_button_group">
+                <button type="button" class="btn btn_secondary" onclick="goToLogin()">
+                    로그인 하러가기
+                </button>
+                <button type="submit" class="btn btn_primary">
+                    가입하기
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function goToLogin() {
+        window.location.href = '/login';
+    }
+</script>
