@@ -5,3 +5,7 @@ __pycache__/
 app/campuslog_project/__pycache__/
 app/web/__pycache__/
 *.pyc
+
+*.DS_Store
+
+app/web/migrations
