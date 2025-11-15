@@ -1,26 +1,120 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>Campuslog</title>
+    <meta charset="UTF-8" />
+    <title>CampusLog</title>
+    <!-- 패널의 css파일 연동 모두 여기서 하기 -->
+    <link rel="stylesheet" href="../../static/web/style.css"/>
+    <link rel="stylesheet" href="../../static/web/component.css"/>
+    <link rel="stylesheet" href="../../static/web/search_panel.css"/>
+    <link rel="stylesheet" href="../../static/web/login_panel.css"/>
+    <link rel="stylesheet" href="../../static/web/register_panel.css">
+    <!-- 카카오 Maps API 불러오기 (이동하 개인 키 값) -->
+     <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=8d908fe0cb6e1d79f77f01659a40a83e&libraries=services"></script>
 </head>
-<body>
-    <h1>Campuslog (Docker + Django)</h1>
-    <nav>
-    {% if user.is_authenticated %}
-        <p>안녕하세요, {{ user.username }}님!</p>
-        <a href="{% url 'logout' %}">로그아웃</a>
-    {% else %}
-        <p>로그인이 필요합니다.</p>
-        <a href="{% url 'login' %}">로그인</a>
-    {% endif %}
-    </nav>
-    <p>버튼을 눌러서 JavaScript가 작동하는지 확인하세요?</p>
-    
-    <button id="myButton">클릭 하지 마세요!</button>
 
-    <script src="{% static 'web/script.js' %}"></script>
+<body>
+    <div id="map"></div>
+
+    <div class="filter_case">
+        <img src="../../static/img/restaurant.svg" class="filter_icon">
+        <img src="../../static/img/cafe.svg" class="filter_icon">
+        <img src="../../static/img/play.svg" class="filter_icon">
+    </div>
+
+    <div class="panel_button" onclick="panelButton()">
+        <img src="../../static/img/right_arrow.svg" class="panel_arrow">
+    </div>
+
+    <!-- 검색 패널 (component.css) -->
+    <div id="search_panel" style="display: none;"></div>
+
+
+    <script>
+        // 전역변수 선언
+        let map;
+        let myMarker;
+        const myImageSrc = "../../static/img/my_marker.svg"; // 내 마커 이미지
+
+
+        // HTMl이 로드 된 다음에 실행 (카카오맵 불러올 때 오류 제거)
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const imageSize = new kakao.maps.Size(44, 66); // 마커 이미지 크기 (가로, 세로)
+            const myMarkerImage = new kakao.maps.MarkerImage(myImageSrc, imageSize); // 내 마커 이미지 객체 생성
+
+            // 지도 초기화
+            function initMap(lat, lng) {
+                const mapContainer = document.getElementById('map'); // "map" div에 지도 표시
+                const mapOption = {
+                    center: new kakao.maps.LatLng(lat, lng), // 지도의 중심 좌표(아래에서 가져온 내 위치)
+                    level: 3 // 지도 확대 레벨
+                };
+
+                map = new kakao.maps.Map(mapContainer, mapOption); // 지도 생성
+
+                // 내 마커 생성
+                myMarker = new kakao.maps.Marker({
+                    position: new kakao.maps.LatLng(lat, lng),
+                    map: map,
+                    image: myMarkerImage
+                });
+            }
+
+            // 내 위치 가져오기
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    const lat = position.coords.latitude;   // 내 위도
+                    const lng = position.coords.longitude;  // 내 경도
+                    initMap(lat, lng);
+                }, function (error) {
+                    alert('위치 접근 실패');
+                });
+            } else {
+                alert('이 브라우저는 위치 정보를 지원하지 않습니다.');
+            }
+        });
+
+        // 유저 좌표 받아오기
+        fetch('/api/locations') // 경로로 GET 요청
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(user => {
+                    const marker = new kakao.maps.Marker({
+                        map: map, // 마커 찍을 지도 지정
+                        position: new kakao.maps.LatLng(user.lat, user.lng), // 마커 위치 지정
+                    });
+
+                });
+            });
+
+        // 패널 버튼 누를 때 작동
+        function panelButton() {
+            const btn = document.querySelector('.panel_button');
+            const panel = document.getElementById('search_panel');
+            const img = document.querySelector('.panel_arrow');
+
+            // 패널이 열려있으면 닫기
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
+                btn.classList.remove('open');        // 버튼 이동
+                img.style.transform = 'scaleX(1)';   // 버튼 속 화살표 좌우 반전
+                return;
+            }
+
+            // 패널이 닫혀있으면 열기
+            fetch('search_panel.html')
+                .then(res => res.text())
+                .then(html => {
+                    panel.innerHTML = html;
+                    panel.style.display = 'block';
+                    btn.classList.add('open');            // 버튼 이동
+                    img.style.transform = 'scaleX(-1)';   // 버튼 속 화살표 좌우 반전
+                })
+                .catch(err => console.error('패널 로딩 실패:', err));
+        }
+
+
+    </script>
 </body>
 </html>
-

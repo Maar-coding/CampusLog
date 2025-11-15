@@ -1,24 +1,24 @@
-# app/campuslog_project/urls.py
-
 from django.contrib import admin
 from django.urls import path, include
-# 1. Django의 내장 인증 뷰 임포트
 from django.contrib.auth import views as auth_views
+from web import views as web_views  # web 앱의 signup 뷰를 가져오기 위해
 
 urlpatterns = [
+    # 1. 관리자 페이지
     path('admin/', admin.site.urls),
-    path('', include('web.urls')), # 'front' 앱의 URL들
 
-    # 2. 로그인 URL 추가
-    path(
-        'login/',
-        auth_views.LoginView.as_view(
-            # Django가 이 템플릿을 사용하도록 알려줌
-            template_name='web/login.html'
-        ),
-        name='login'
-    ),
+    # 2. 인증 (명세서 기반)
+    # GET, POST /login (이전에 만든 로그인 폼 템플릿 지정)
+    path('login', auth_views.LoginView.as_view(template_name='web/login.html'), name='login'),
 
-    # 3. 로그아웃 URL 추가
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    # GET, POST /register (이전에 만든 web.views.signup 함수 사용)
+    path('register', web_views.register, name='register'),  # 명세서의 /register와 일치
+
+    # POST /logout
+    path('logout', auth_views.LogoutView.as_view(), name='logout'),
+
+    # 3. 나머지 모든 웹 기능
+    # '/' (메인), '/search', '/restaurant/', '/board/', '/api/' 등...
+    # 이 모든 요청을 web/urls.py 파일로 넘깁니다.
+    path('', include('web.urls')),
 ]
