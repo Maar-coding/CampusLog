@@ -1,0 +1,310 @@
+/* ===== 공통: 왼쪽 패널(모달) 영역 ===== */
+.restaurant_inner {
+  padding: 20px 20px 16px;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.restaurant_header {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.restaurant_thumbnail {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #f3f3f3;
+}
+
+.restaurant_thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbnail_placeholder {
+  width: 100%;
+  height: 100%;
+  background: #e5e5e5;
+}
+
+.restaurant_basic {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.restaurant_title_row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.restaurant_title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.badge_status {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.badge_open {
+  color: #1a7f37;
+  background-color: #e8f5ec;
+  border-color: #c2e3d0;
+}
+
+.badge_closed {
+  color: #b3261e;
+  background-color: #ffebeb;
+  border-color: #f2c7c3;
+}
+
+.restaurant_meta {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 13px;
+  color: #555555;
+  line-height: 1.5;
+}
+
+.restaurant_section {
+  margin-top: 24px;
+}
+
+.section_title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.section_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.link_more {
+  font-size: 12px;
+  color: #666666;
+  text-decoration: none;
+}
+
+.link_more:hover {
+  text-decoration: underline;
+}
+
+.empty_text,
+.review_empty {
+  font-size: 13px;
+  color: #999999;
+}
+
+.menu_list {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.menu_card {
+  min-width: 90px;
+  max-width: 110px;
+  border-radius: 10px;
+  background-color: #fafafa;
+  box-shadow: 0 0 0 1px #f0f0f0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu_image {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  background-color: #f3f3f3;
+}
+
+.menu_image.placeholder {
+  background: #e5e5e5;
+}
+
+.menu_info {
+  padding: 6px 8px 8px;
+}
+
+.menu_name {
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.menu_price {
+  font-size: 11px;
+  color: #777777;
+}
+
+.rating_section {
+  border-radius: 12px;
+  background-color: #fafafa;
+  padding: 12px 14px;
+}
+
+.rating_summary {
+  display: flex;
+  gap: 16px;
+}
+
+.rating_main {
+  width: 90px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.rating_score {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rating_stars {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.star {
+  font-size: 13px;
+  color: #ddd; 
+}
+
+.star.on {
+  color: #f6b800;
+}
+
+.rating_count {
+  font-size: 11px;
+  color: #777;
+}
+
+.rating_distribution {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rating_row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rating_label {
+  font-size: 11px;
+  width: 10px;
+  text-align: right;
+  color: #777;
+}
+
+.rating_bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background-color: #e6e6e6;
+  overflow: hidden;
+}
+
+.rating_bar_fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ffe08a, #ffc400);
+}
+
+.rating_row_count {
+  font-size: 11px;
+  width: 24px;
+  text-align: right;
+  color: #777;
+}
+
+.review_list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.review_item {
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.review_item:last-child {
+  border-bottom: none;
+}
+
+.review_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.review_title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.review_content {
+  font-size: 12px;
+  color: #555;
+  margin: 4px 0 6px;
+  line-height: 1.5;
+}
+
+.review_meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #999;
+}
+
+.review_author {
+  font-weight: 500;
+}
+
+.review_date {
+  white-space: nowrap;
+}
+
+.restaurant_inner::-webkit-scrollbar {
+  width: 6px;
+}
+
+.restaurant_inner::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.restaurant_inner::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 999px;
+}
+
