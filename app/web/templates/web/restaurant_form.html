@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>신규 식당 등록</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f8f9fa; color: #333; padding: 20px; }
+        .panel_case { max-width: 800px; margin: 0 auto; background-color: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .restaurant_inner { padding: 24px; }
+        .section_title { font-size: 1.5rem; font-weight: 600; margin-bottom: 20px; }
+
+        /* 폼 스타일 */
+        .form_group { margin-bottom: 16px; }
+        .form_group label { display: block; font-weight: 500; margin-bottom: 6px; }
+        /* 폼 입력창 (input, select, textarea) 스타일 통일 */
+        .form_group input[type="text"],
+        .form_group input[type="url"],
+        .form_group input[type="time"],
+        .form_group input[type="number"],
+        .form_group select,
+        .form_group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* 패딩 포함해서 width 100% */
+            font-size: 1rem;
+        }
+
+        .submit_btn {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #28a745; /* Green color for admin action */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .submit_btn:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+
+<div class="panel_case">
+    <div class="restaurant_inner">
+        <h3 class="section_title">신규 식당 등록</h3>
+
+        <!-- 식당 등록 폼 -->
+        <form action="{% url 'restaurant_create' %}" method="POST">
+            {% csrf_token %} {# ⬅️ Django 폼에는 CSRF 토큰이 필수! #}
+
+            <!--
+                폼 필드를 하나씩 배치합니다.
+                {{ form.as_p }}를 사용하면 간단하지만 (<p> 태그로 래핑됨)
+                스타일링을 위해 수동으로 배치하는 것이 좋습니다.
+            -->
+
+            <div class="form_group">
+                {{ form.name.label_tag }}
+                {{ form.name }}
+            </div>
+            <div class="form_group">
+                {{ form.address.label_tag }}
+                {{ form.address }}
+            </div>
+            <div class="form_group">
+                {{ form.open_time.label_tag }}
+                {{ form.open_time }}
+            </div>
+            <div class="form_group">
+                {{ form.close_time.label_tag }}
+                {{ form.close_time }}
+            </div>
+            <div class="form_group">
+                {{ form.holiday.label_tag }}
+                {{ form.holiday }}
+            </div>
+            <div class="form_group">
+                {{ form.phone.label_tag }}
+                {{ form.phone }}
+            </div>
+            <div class="form_group">
+                {{ form.image_url.label_tag }}
+                {{ form.image_url }}
+            </div>
+
+            <button type="submit" class="submit_btn">식당 등록하기</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
