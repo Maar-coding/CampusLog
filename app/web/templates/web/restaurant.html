@@ -11,7 +11,7 @@
 
                 <div class="restaurant_basic">
                     <div class="restaurant_title_row">
-                        <h2 class="restaurant_title">{restaurant.name}</h2>
+                        <h2 class="restaurant_title">{{restaurant.name}}</h2>
                         <span class="badge_status {% if restaurant.is_open %}badge_open{% else %}badge_closed{% endif %}">
                             {% if restaurant.is_open %}영업중{% else %}영업 종료{% endif %}
                         </span>
@@ -27,7 +27,7 @@
             <div class="restaurant_section">
                 <h3 class="section_title">메뉴판</h3>
                 <div class="menu_list">
-                    {% for menu is menu %}
+                    {% for menu in menus %}
                     <div class="menu_card">
                         {% if menu.image_url %}
                         <img src="{{ menu.image_url }}" alt="{{ menu.name}}" class="menu_image" />
