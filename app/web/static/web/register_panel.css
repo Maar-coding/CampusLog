@@ -1,118 +1,229 @@
-.register_inner {
+/* ===== 회원가입 패널 레이아웃 (login과 유사) ===== */
+
+/* panel_case 안에서 회원가입 패널만 정렬 */
+.register_panel {
     display: flex;
-    flex-direction: column;
-    height: 100%
+    justify-content: center;
 }
 
+/* 전체 래퍼 – 로그인과 동일한 폭/여백 */
+.register_wrap {
+    width: 100%;
+    max-width: 380px;
+    margin: 32px auto 24px;
+    padding: 0 24px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 상단: 뒤로가기 영역 */
+.register_top {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+/* 뒤로가기 버튼 – 로그인과 동일 스타일 */
+.register_top .back_button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 500;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: color 0.15s ease, transform 0.08s ease;
+}
+
+.register_top .back_button .back_icon {
+    font-size: 15px;
+}
+
+.register_top .back_button:hover {
+    color: #4b5563;
+    transform: translateX(-1px);
+}
+
+/* ===== 내용 영역 ===== */
+
+.register_card {
+    margin-top: 40px;               /* login_card와 동일한 간격 */
+    padding: 10px 0 24px;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+}
+
+/* 제목 – 로그인과 동일 톤 */
 .register_title {
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0 0 24px 0;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    color: #111827;
+    text-align: center;
 }
 
+/* 폼 레이아웃 */
 .register_form {
+    margin-top: 10px;               /* login_form과 동일 */
     display: flex;
     flex-direction: column;
 }
 
-.form_group {
+/* 각 입력 그룹 */
+.register_card .form_group {
     display: flex;
     flex-direction: column;
     margin-bottom: 16px;
 }
 
-.form_label {
-    font-size: 13px;
+/* 라벨 */
+.register_card .form_label {
+    font-size: 12px;
     margin-bottom: 6px;
-    color: #555555;
+    color: #4b5563;
 }
 
-.form_input {
+/* 인풋 공통 – 로그인 인풋과 동일 */
+.register_card .form_input {
     width: 100%;
-    height: 40px;
-    padding: 0 12px;
-    border-radius: 8px;
-    border: 1px solid #dcdcdc;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background-color: #f9fafb;
     font-size: 14px;
     outline: none;
+    box-sizing: border-box;
 }
 
-.form_input::placeholder {
-    color: #b3b3b3;
+.register_card .form_input::placeholder {
+    color: #b1b5bd;
 }
 
-.form_input:focus {
-    border-color: #2f80ed;
-    box-shadow: 0 0 0 2px rgba(47, 128, 237 0.15);
-}
-
-.form_select {
+.register_card .form_input:focus {
+    border-color: #2563eb;
     background-color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
-.section_divider {
-    display: flex;
-    align-items: center;
-    margin: 20px 0 12px 0;
-}
+/* ===== 선택 구분선 ===== */
 
-.section_divider::before, .section_divider::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background-color: #e0e0e0;
+.selection_divider {
+    position: relative;
+    margin: 12px 0 16px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
 }
 
 .section_divider_label {
-    margin: 0 8px;
-    font-size: 12px;
-    color: #888888;
+    position: relative;
+    top: -10px;
+    display: inline-block;
+    padding: 0 10px;
+    font-size: 11px;
+    color: #9ca3af;
+    background-color: #ffffff;
 }
+
+/* ===== 라디오 그룹 (직업) ===== */
 
 .radio_group {
     display: flex;
-    flex-wrap: wrap;
     gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
 }
 
 .radio_item {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 13px;
-    color: #444444;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    background-color: #ffffff;
+    font-size: 12px;
+    color: #4b5563;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
 }
 
-.form_error {
+.radio_item input[type="radio"] {
+    accent-color: #2563eb;
+}
+
+.radio_item:hover {
+    border-color: #c7d2fe;
+    background-color: #f5f7ff;
+}
+
+/* ===== 셀렉트 박스 (가입 경로) ===== */
+
+.register_card .form_select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%239ca3af' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px 8px;
+    padding-right: 32px;
+}
+
+/* ===== 에러 메시지 ===== */
+
+.register_card .form_error {
     margin-top: 4px;
     margin-bottom: 12px;
     font-size: 12px;
-    color: #e53935
+    color: #ef4444;
 }
 
+/* ===== 버튼 그룹 – 로그인과 동일 스타일 ===== */
+
 .register_button_group {
-    margin-top: 24px;
+    margin-top: 20px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    align-items: center;
 }
 
-.btn {
+/* 버튼 공통 */
+.register_button_group .btn {
     width: 100%;
-    height: 44px;
-    border-radius: 8px;
+    max-width: 260px;
+    height: 46px;
+    border-radius: 999px;
     border: none;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.15s ease, filter 0.15 ease;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.05s ease,
+        box-shadow 0.15s ease;
 }
 
-.btn_primary {
-    background-color: #f2f2f2;
-    color: #333333;
+/* 메인 버튼(회원가입하기) */
+.register_button_group .btn_primary {
+    background-color: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
 }
 
-.btn_primary:hover {
-    background-color: #e0e0e0;
+.register_button_group .btn_primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.45);
 }

@@ -1,90 +1,172 @@
-.login_inner {
+/* ===== 패널 안 레이아웃 (panel_case 자체는 건드리지 않음) ===== */
+
+/* 로그인 패널: panel_case 내부 정렬만 조절 */
+.login_panel {
     display: flex;
-    flex-direction: column;
-    height: 100%
+    justify-content: center;
 }
 
+/* 로그인 전체 래퍼 */
+.login_wrap {
+    width: 100%;
+    max-width: 380px;
+    margin: 32px auto 24px;    /* 패널 상단에서 살짝만 내려오게 */
+    padding: 0 24px;           /* 패널 안쪽 여백 */
+    box-sizing: border-box;
+}
+
+/* 상단: 뒤로가기 영역 */
+.login_top {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+/* 뒤로가기 버튼 – 패널 헤더 안에 자연스럽게 녹이는 느낌 */
+.login_top .back_button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 500;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: color 0.15s ease, transform 0.08s ease;
+}
+
+.login_top .back_button .back_icon {
+    font-size: 15px;
+}
+
+.login_top .back_button:hover {
+    color: #4b5563;
+    transform: translateX(-1px);
+}
+
+/* ===== 콘텐츠 영역 ===== */
+
+/* login_card: 더 이상 카드처럼 보이지 않게 (배경·그림자 제거) */
+.login_card {
+    margin-top: 40px;
+    padding: 10px 0 24px;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+}
+
+/* 타이틀 – 패널 안에서만 살짝 강조 */
 .login_title {
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0 0 24px 0;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    color: #111827;
+    text-align: center;
 }
 
+/* 폼 전체 */
 .login_form {
+    margin-top: 10px;
     display: flex;
     flex-direction: column;
 }
 
-.form_group {
+/* 각 입력 그룹 */
+.login_card .form_group {
     display: flex;
     flex-direction: column;
     margin-bottom: 16px;
 }
 
-.form_label {
-    font-size: 13px;
+/* 라벨 */
+.login_card .form_label {
+    font-size: 12px;
     margin-bottom: 6px;
-    color: #555555;
+    color: #4b5563;
 }
 
-.form_input {
+/* 인풋 – panel 안 내용처럼 자연스럽게 */
+.login_card .form_input {
     width: 100%;
-    height: 40px;
-    padding: 0 12px;
-    border-radius: 8px;
-    border: 1px solid  #dcdcdc;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background-color: #f9fafb;
     font-size: 14px;
     outline: none;
+    box-sizing: border-box;
 }
 
-.form_input::placeholder {
-    color: #b3b3b3;
+.login_card .form_input::placeholder {
+    color: #b1b5bd;
 }
 
-.form_input:focus {
-    border-color: #2f80ed;
-    box-shadow: 0 0 0 2px rgba(47, 128, 237, 0.15);
+.login_card .form_input:focus {
+    border-color: #2563eb;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.20);
 }
 
-.form_error {
-    margin-top: 4px;
-    margin-bottom: 12px;
+/* 에러 메시지 */
+.login_card .form_error {
+    margin-top: 2px;
+    margin-bottom: 14px;
     font-size: 12px;
-    color: #e53935;
+    color: #ef4444;
 }
 
+/* 버튼 그룹 – 가운데 정렬 + 버튼 길이 제한 */
 .login_button_group {
-    margin-top: 24px;
+    margin-top: 20px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    align-items: center;
 }
 
-.btn {
+/* 버튼 공통 (로그인 패널 안에서만) */
+.login_button_group .btn {
     width: 100%;
-    height: 44px;
-    border-radius: 8px;
+    max-width: 260px;
+    height: 46px;
+    border-radius: 999px;
     border: none;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.15s ease, filter 0.15s ease;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.05s ease,
+        box-shadow 0.15s ease;
 }
 
-.btn_secondary {
-    background-color: #2f80ed;
+/* 메인 버튼(로그인) */
+.login_button_group .btn_primary {
+    background-color: #2563eb;
     color: #ffffff;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
 }
 
-.btn_primary {
-    background-color: #f2f2f2;
-    color: #333333;
+.login_button_group .btn_primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.45);
 }
 
-.btn_secondary:hover {
-    filter: brightness(0.95);
+/* 보조 버튼(회원가입) */
+.login_button_group .btn_secondary {
+    background-color: #ffffff;
+    color: #2563eb;
+    border: 1px solid #2563eb;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
 }
 
-.btn_primary:hover {
-    background-color: #e0e0e0;
+.login_button_group .btn_secondary:hover {
+    background-color: #eff3ff;
+    transform: translateY(-1px);
 }

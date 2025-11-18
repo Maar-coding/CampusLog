@@ -1,14 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../../static/web/login_panel.css">
+</head>
+<body>
 <!-- 왼쪽 패널 영역 (이 div 안에 코딩하기) -->
-<div class="panel_case login_panel">
+<div class="panel_case">
   <div class="login_wrap">
-    <header class="login_top">
-      <button type="button" class="back_button" onclick="goBack()">
-        <span class="back_icon">←</span>
-        <span>뒤로 가기</span>
-      </button>
-    </header>
+      <header class="login_top">
+  <button type="button" class="back_button" onclick="goBack()">
+    <span class="back_icon">←</span>
+    <span>뒤로 가기</span>
+  </button>
+</header>
+
+
 
     <div class="login_card">
+      <!-- 제목만 남기고, 간단하게 -->
       <h2 class="login_title">로그인</h2>
 
       <form class="login_form" method="post" action="{% url 'login' %}">
@@ -46,11 +57,7 @@
 
         <div class="login_button_group">
           <button type="submit" class="btn btn_primary">로그인</button>
-          <button
-            type="button"
-            class="btn btn_secondary"
-            onclick="goToRegister()"
-          >
+          <button type="button" class="btn btn_secondary" onclick="goToRegister()">
             회원가입 하러가기
           </button>
         </div>
@@ -68,3 +75,6 @@
     window.location.href = "{% url 'register' %}";
   }
 </script>
+</body>
+
+</html>
