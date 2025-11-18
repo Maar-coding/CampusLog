@@ -115,6 +115,49 @@
                 .catch(err => console.error('패널 로딩 실패:', err));
         }
 
+        <script src="{% static 'web/script.js' %}"></script>
+
+      //게시판 화면 전용 스크립트
+      // 현재 카테고리 (템플릿에서 내려옴, 기본값 restaurant)
+      const currentCategory = "{{ current_category|default:'restaurant' }}";
+
+      // 5-1. 뒤로가기 : 검색 페이지로 이동 (GET /search)
+      function goBackToSearch() {
+        window.location.href = "/search";
+      }
+
+      // 5-3. 게시판 닫기 : 패널 숨기기 (.is_hidden은 CSS에서 처리)
+      function closeBoardPanel() {
+        const panel = document.querySelector(".panel_case");
+        if (panel) {
+          panel.classList.add("is_hidden");
+        }
+      }
+
+      // 카테고리 변경 : GET /board/{category}
+      function changeCategory(category) {
+        if (category === currentCategory) return;
+        window.location.href = `/board/${category}`;
+      }
+
+      // 게시글 상세 이동 : GET /board/{category}/{postId}
+      function goToPost(category, postId) {
+        window.location.href = `/board/${category}/${postId}`;
+      }
+
+      // 5-2. 게시글 작성 버튼 동작
+      //  - 로그인 O : GET /board/{category}/write
+      //  - 로그인 X : 알림 후 GET /login?next=/board/{category}/write
+      function goToWrite(category) {
+        {% if user.is_authenticated %}
+          window.location.href = `/board/${category}/write`;
+        {% else %}
+          alert("로그인 후 글을 작성할 수 있습니다.");
+          const nextUrl = `/board/${category}/write`;
+          window.location.href =
+            "{% url 'login' %}?next=" + encodeURIComponent(nextUrl);
+        {% endif %}
+      }
 
     </script>
 </body>
