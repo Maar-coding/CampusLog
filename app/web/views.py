@@ -26,7 +26,6 @@ def index(request):
     # (기존) GET / : 메인 페이지 (지도 화면)
     return render(request, 'web/index.html')
 
-
 def search_page(request):
     # (신규) GET /search : 검색 화면
     # ... 검색 로직 ...
@@ -144,6 +143,10 @@ def review_write_form(request, id):
 # ==================================================================
 # 2. 게시판 뷰 (HTML 렌더링)
 # ==================================================================
+def board(request):
+    return render(request, 'web/board.html')
+
+
 
 def board_list(request, category):
     # (신규) GET, POST /board/{category}
