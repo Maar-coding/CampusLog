@@ -1,3 +1,118 @@
 <div class="panel_case">
+  <div class="board_inner">
 
+    <!-- 1. 상단 헤더 : 뒤로가기 / 제목 / 닫기 -->
+    <div class="board_header">
+      <button
+        type="button"
+        class="icon_btn icon_back"
+        onclick="goBackToSearch()"
+      >
+        ←
+      </button>
+
+      <h2 class="board_title">주변 맛집 · 카페 게시판</h2>
+
+      <button
+        type="button"
+        class="icon_btn icon_close"
+        onclick="closeBoardPanel()"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- 2. 카테고리 탭 -->
+    <div class="board_category_tabs">
+      <button
+        type="button"
+        class="tab_btn {% if current_category == 'restaurant' %}is_active{% endif %}"
+        onclick="changeCategory('restaurant')"
+      >
+        식당
+      </button>
+
+      <button
+        type="button"
+        class="tab_btn {% if current_category == 'dessert' %}is_active{% endif %}"
+        onclick="changeCategory('dessert')"
+      >
+        디저트
+      </button>
+
+      <button
+        type="button"
+        class="tab_btn {% if current_category == 'play' %}is_active{% endif %}"
+        onclick="changeCategory('play')"
+      >
+        놀거리
+      </button>
+    </div>
+
+    <!-- 3. 상단 툴바 : 안내 문구 + 버튼 -->
+    <div class="board_toolbar">
+      <p class="board_desc">
+        선택한 카테고리의 식당·카페 후기를 확인하고, 직접 후기도 남겨 보세요.
+      </p>
+
+      <div class="board_actions">
+        <button
+          type="button"
+          class="btn btn_secondary"
+          onclick="closeBoardPanel()"
+        >
+          게시판 패널 닫기
+        </button>
+
+        <button
+          type="button"
+          class="btn btn_primary"
+          onclick="goToWrite('{{ current_category }}')"
+        >
+          {% if user.is_authenticated %}
+          게시글 작성하기
+          {% else %}
+          로그인 후 글쓰기
+          {% endif %}
+        </button>
+      </div>
+    </div>
+
+    <!-- 4. 게시글 목록 -->
+    <ul class="board_list">
+      {% for post in posts %}
+      <li
+        class="board_item"
+        onclick="goToPost('{{ current_category }}', '{{ post.id }}')"
+      >
+        <div class="board_item_header">
+          <h3 class="board_item_title">{{ post.title }}</h3>
+
+          {% if post.place_name %}
+          <span class="board_item_badge">{{ post.place_name }}</span>
+          {% endif %}
+        </div>
+
+        <p class="board_item_excerpt">
+          {{ post.excerpt|default:post.content|truncatechars:60 }}
+        </p>
+
+        <div class="board_item_meta">
+          <span class="meta_author">{{ post.author }}</span>
+          <span class="meta_date">{{ post.created_at|date:"Y-m-d" }}</span>
+
+          {% if post.view_count %}
+          <span class="meta_view">조회 {{ post.view_count }}</span>
+          {% endif %}
+        </div>
+      </li>
+
+      {% empty %}
+      <li class="board_empty">
+        아직 등록된 글이 없습니다. 첫 번째 게시글을 남겨 보세요!
+      </li>
+      {% endfor %}
+    </ul>
+
+  </div>
 </div>
