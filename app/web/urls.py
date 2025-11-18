@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.index, name='index'),  # GET /
     path('search_panel', views.search_page, name='search_panel'),  # GET /search
 
+    path('board',views.board,name='board'),
     # 2. 식당 및 리뷰 (명세서 기반)
     # {id} -> <int:id>
     path('restaurant/<int:id>', views.restaurant_detail, name='restaurant_detail'),  # GET
