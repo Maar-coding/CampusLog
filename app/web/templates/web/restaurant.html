@@ -1,67 +1,107 @@
 <div class="panel_case">
-    <div class="restaurant_inner">
-        <div class="restaurant_header">
-            <div class="restaurant_thumbnail">
-                {% if restaurant.image_url %}
-                <img src="{{ restaurant.image_url }}" alt="{{ restaurant.name}}" />
-                {% else %}
-                <div class="thumbnail_placeholder">
-                {% endif %}
-                </div>
+  <div class="restaurant_inner">
+    <!-- 상단 뒤로가기 -->
+    <header class="restaurant_top">
+      <button type="button" class="back_button" onclick="goBack()">
+        <span class="back_icon">←</span>
+        <span>뒤로 가기</span>
+      </button>
+    </header>
 
-                <div class="restaurant_basic">
-                    <div class="restaurant_title_row">
-                        <h2 class="restaurant_title">{{restaurant.name}}</h2>
-                        <span class="badge_status {% if restaurant.is_open %}badge_open{% else %}badge_closed{% endif %}">
-                            {% if restaurant.is_open %}영업중{% else %}영업 종료{% endif %}
-                        </span>
-                    </div>
-                    <ul class="restaurant_meta">
-                        <li>• {{ restaurant.address }}</li>
-                        <li>• 영업시간 {{ restaurant.open_time }} ~ {{ restaurant.close_time }}</li>
-                        <li>• 매주 {{ restaurant.holiday_display }} 휴무</li>
-                        <li>• {{ restaurant.phone }}</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="restaurant_section">
-                <h3 class="section_title">메뉴판</h3>
-                <div class="menu_list">
-                    {% for menu in menus %}
-                    <div class="menu_card">
-                        {% if menu.image_url %}
-                        <img src="{{ menu.image_url }}" alt="{{ menu.name}}" class="menu_image" />
-                        {% else %}
-                        <div class="menu_image placeholder"></div>
-                        {% endif %}
-                        <div class="menu_info">
-                            <div class="menu_name">{{ menu.name }}</div>
-                            <div class="menu_price">{{ menu.price }}원</div>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <p class="empty_text">등록된 메뉴가 없습니다.</p>
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="restaurant_section rating_section">
-                <div class="rating_summary">
-                    <div class="rating_main">
-                        <div class="rating_score">
-                            {{ restaurant.avg_rating|default:"-"}}
-                        </div>
-                        <div class="rating_star">
-                            {% for i in "12345" %}
-                            <span class="star {% if forloop.counter <= restaurant.avg_rating|default:0 %}on{% endif %}">★</span>
-                            {% endfor %}
-                        </div>
-                        <div class="rating_count">
-                            {{ restaurant.review_count }}개의 리뷰
-                        </div>
-                    </div>
-                    <div class="rating_distribution">
+    <!-- 식당 기본 정보 -->
+    <div class="restaurant_header">
+      <!-- 위에 가로로 긴 사진 -->
+      <div class="restaurant_thumbnail restaurant_thumbnail-wide">
+        {% if restaurant.image_url %}
+        <img src="{{ restaurant.image_url }}" alt="{{ restaurant.name }}" />
+        {% else %}
+        <div class="thumbnail_placeholder"></div>
+        {% endif %}
+      </div>
+
+      <!-- 가게 이름 + 영업중 배지 -->
+      <div class="restaurant_title_row">
+        <h2 class="restaurant_title">{{ restaurant.name }}</h2>
+        <span
+          class="badge_status {% if restaurant.is_open %}badge_open{% else %}badge_closed{% endif %}"
+        >
+          {% if restaurant.is_open %}영업중{% else %}영업 종료{% endif %}
+        </span>
+      </div>
+
+      <!-- 가게 정보 (주소 / 영업시간 / 휴무일 / 연락처) -->
+      <ul class="restaurant_meta">
+        <li>
+          <span class="meta_label">주소</span>
+          <span class="meta_value">{{ restaurant.address }}</span>
+        </li>
+        <li>
+          <span class="meta_label">영업시간</span>
+          <span class="meta_value">
+            {{ restaurant.open_time }} ~ {{ restaurant.close_time }}
+          </span>
+        </li>
+        <li>
+          <span class="meta_label">휴무일</span>
+          <span class="meta_value">
+            매주 {{ restaurant.holiday_display }} 휴무
+          </span>
+        </li>
+        <li>
+          <span class="meta_label">연락처</span>
+          <span class="meta_value">{{ restaurant.phone }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 메뉴 리스트 섹션 -->
+    <div class="restaurant_section">
+      <h3 class="section_title">메뉴판</h3>
+      <div class="menu_list">
+        {% for menu in menus %}
+        <div class="menu_card">
+          {% if menu.image_url %}
+          <img
+            src="{{ menu.image_url }}"
+            alt="{{ menu.name }}"
+            class="menu_image"
+          />
+          {% else %}
+          <div class="menu_image placeholder"></div>
+          {% endif %}
+          <div class="menu_info">
+            <div class="menu_name">{{ menu.name }}</div>
+            <div class="menu_price">{{ menu.price }}원</div>
+          </div>
+        </div>
+        {% empty %}
+        <p class="empty_text">등록된 메뉴가 없습니다.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 평점 섹션 -->
+    <div class="restaurant_section rating_section">
+      <div class="rating_summary">
+        <div class="rating_main">
+          <div class="rating_score">
+            {{ restaurant.avg_rating|default:"-" }}
+          </div>
+          <div class="rating_star">
+            {% for i in "12345" %}
+            <span
+              class="star {% if forloop.counter <= restaurant.avg_rating|default:0 %}on{% endif %}"
+              >★</span
+            >
+            {% endfor %}
+          </div>
+          <div class="rating_count">
+            {{ restaurant.review_count }}개의 리뷰
+          </div>
+        </div>
+
+        <div class="rating_distribution">
           {% for stat in rating_stats %}
-          {# stat.star: 별점(5~1), stat.percent: 백분율, stat.count: 개수 #}
           <div class="rating_row">
             <span class="rating_label">{{ stat.star }}</span>
             <div class="rating_bar">
@@ -81,12 +121,12 @@
     <div class="restaurant_section review_section">
       <div class="section_header">
         <h3 class="section_title">{{ restaurant.name }} 후기</h3>
-        <!-- 전체 후기 페이지가 있다면 이런 식으로 URL 연결 -->
         <a
           href="{% url 'restaurant_reviews' restaurant.id %}"
           class="link_more"
-          >{{ restaurant.name }} 후기 &gt;</a
         >
+          {{ restaurant.name }} 후기 &gt;
+        </a>
       </div>
 
       <ul class="review_list">
@@ -120,3 +160,9 @@
     </div>
   </div>
 </div>
+
+<script>
+  function goBack() {
+    window.location.href = "{% url 'index' %}";
+  }
+</script>

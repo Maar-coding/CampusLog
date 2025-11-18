@@ -1,115 +1,124 @@
-<div class="panel_case">
-  <div class="register_inner">
-    <h2 class="register_title">회원가입을 위한 정보를 입력해주세요.</h2>
+<!-- 왼쪽 패널 영역 (회원가입) -->
+<div class="panel_case register_panel">
+  <div class="register_wrap">
+    <!-- 상단 뒤로가기 영역 -->
+    <header class="register_top">
+      <button type="button" class="back_button" onclick="goBack()">
+        <span class="back_icon">←</span>
+        <span>뒤로 가기</span>
+      </button>
+    </header>
 
-    <form class="register_form" method="post" action="{% url 'register' %}">
-      {% csrf_token %}
+    <div class="register_card">
+      <h2 class="register_title">회원가입</h2>
 
-      <div class="form_group">
-        <label for="nickname" class="form_label">닉네임</label>
-        <input
-          type="text"
-          id="nickname"
-          name="nickname"
-          class="form_input"
-          placeholder="닉네임"
-          required
-        />
-      </div>
+      <form class="register_form" method="post" action="{% url 'register' %}">
+        {% csrf_token %}
 
-      <div class="form_group">
-        <label for="loginId" class="form_label">아이디</label>
-        <input
-          type="text"
-          id="loginId"
-          name="loginId"
-          class="form_input"
-          placeholder="아이디"
-          required
-        />
-      </div>
-
-      <div class="form_group">
-        <label for="password" class="form_label">비밀번호</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          class="form_input"
-          placeholder="비밀번호"
-          required
-        />
-      </div>
-
-      <div class="form_group">
-        <label for="passwordConfirm" class="form_label">비밀번호 확인</label>
-        <input
-          type="password"
-          id="passwordConfirm"
-          name="passwordConfirm"
-          class="form_input"
-          placeholder="비밀번호 확인"
-          required
-        />
-      </div>
-
-      <div class="selection_divider">
-        <span class="section_divider_label">선택 사항</span>
-      </div>
-
-      <div class="form_group">
-        <span class="form_label">직업 (선택)</span>
-        <div class="radio_group">
-          <label class="radio_item">
-            <input type="radio" name="job" value="STUDENT" />
-            <span>학부생</span>
-          </label>
-          <label class="radio_item">
-            <input type="radio" name="job" value="GRAD" />
-            <span>대학원생</span>
-          </label>
-          <label class="radio_item">
-            <input type="radio" name="job" value="PROFESSOR" />
-            <span>교수님</span>
-          </label>
+        <div class="form_group">
+          <label for="nickname" class="form_label">닉네임</label>
+          <input
+            type="text"
+            id="nickname"
+            name="nickname"
+            class="form_input"
+            placeholder="닉네임"
+            required
+          />
         </div>
-      </div>
 
-      <div class="form_group">
-        <span class="form_label">가입 경로</span>
-        <select id="joinPath" name="joinPath" class="form_input form_select">
-          <option value="">선택</option>
-          <option value="SEARCH">검색</option>
-          <option value="AD">광고</option>
-          <option value="FRIEND">지인 추천</option>
-          <option value="ETC">기타</option>
-        </select>
-      </div>
+        <div class="form_group">
+          <label for="loginId" class="form_label">아이디</label>
+          <input
+            type="text"
+            id="loginId"
+            name="loginId"
+            class="form_input"
+            placeholder="아이디"
+            required
+          />
+        </div>
 
-      {% if form.errors %}
-      <p class="form_error" id="registerError">
-        입력하신 정보를 다시 확인해 주세요.
-      </p>
-      {% elif error_message %}
-      <p class="form_error" id="registerError">
-        {{ error_message }}
-      </p>
-      {% endif %}
+        <div class="form_group">
+          <label for="password" class="form_label">비밀번호</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form_input"
+            placeholder="비밀번호"
+            required
+          />
+        </div>
 
-      <div class="register_button_group">
-        <button type="submit" class="btn btn_primary">
-          회원가입하기
-        </button>
-        <button type="button" class="btn btn_secondary" onclick="goToLogin()">
-          로그인 하러가기
-        </button>
-      </div>
-    </form>
+        <div class="form_group">
+          <label for="passwordConfirm" class="form_label">비밀번호 확인</label>
+          <input
+            type="password"
+            id="passwordConfirm"
+            name="passwordConfirm"
+            class="form_input"
+            placeholder="비밀번호 확인"
+            required
+          />
+        </div>
+
+        <div class="selection_divider">
+          <span class="section_divider_label">선택 사항</span>
+        </div>
+
+        <div class="form_group">
+          <span class="form_label">직업 (선택)</span>
+          <div class="radio_group">
+            <label class="radio_item">
+              <input type="radio" name="job" value="STUDENT" />
+              <span>학부생</span>
+            </label>
+            <label class="radio_item">
+              <input type="radio" name="job" value="GRAD" />
+              <span>대학원생</span>
+            </label>
+            <label class="radio_item">
+              <input type="radio" name="job" value="PROFESSOR" />
+              <span>교수님</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form_group">
+          <span class="form_label">가입 경로</span>
+          <select id="joinPath" name="joinPath" class="form_input form_select">
+            <option value="">선택</option>
+            <option value="SEARCH">검색</option>
+            <option value="AD">광고</option>
+            <option value="FRIEND">지인 추천</option>
+            <option value="ETC">기타</option>
+          </select>
+        </div>
+
+        {% if form.errors %}
+        <p class="form_error" id="registerError">
+          입력하신 정보를 다시 확인해 주세요.
+        </p>
+        {% elif error_message %}
+        <p class="form_error" id="registerError">
+          {{ error_message }}
+        </p>
+        {% endif %}
+
+        <div class="register_button_group">
+          <button type="submit" class="btn btn_primary">
+            회원가입하기
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
 <script>
-  function goToLogin() {
+  // 로그인 페이지로 뒤로가기
+  function goBack() {
     window.location.href = "{% url 'login' %}";
   }
 </script>

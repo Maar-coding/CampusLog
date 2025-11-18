@@ -26,6 +26,9 @@ def index(request):
     # (기존) GET / : 메인 페이지 (지도 화면)
     return render(request, 'web/index.html')
 
+def test_page(request):
+    return render(request, 'web/test.html')
+
 def search_page(request):
     # (신규) GET /search : 검색 화면
     # ... 검색 로직 ...
