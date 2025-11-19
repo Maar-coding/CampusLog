@@ -1,0 +1,58 @@
+{% load static %}
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>CampusLog Start</title>
+
+    <!-- 시작 화면 전용 CSS -->
+    <link rel="stylesheet" href="{% static '../../static/web/start.css' %}">
+</head>
+<body>
+  <div class="start-wrap">
+    <!-- 뒷 배경 지도 -->
+    <div class="start-bg"></div>
+
+    <!-- 가운데 카드 -->
+    <div class="start-overlay">
+      <div class="start-card">
+        <!-- 로고 이미지 -->
+        <img
+          src="{% static '../../static/img/campuslog_logo.png' %}"
+          alt="CampusLog 로고"
+          class="start-logo-img"
+        />
+        <p class="start-subtitle">매지리 식당 정보를 한눈에!</p>
+
+        <div class="start-btn-row">
+          <button type="button" class="start-btn" onclick="goLogin()">
+            로그인
+          </button>
+          <button type="button" class="start-btn" onclick="goRegister()">
+            회원가입
+          </button>
+          <button type="button" class="start-btn" onclick="goGuest()">
+            게스트
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 로그인 버튼 → 로그인 패널 페이지로 이동
+    function goLogin() {
+      window.location.href = "{% url 'login' %}";
+    }
+
+    // 회원가입 버튼 → 회원가입 패널 페이지로 이동
+    function goRegister() {
+      window.location.href = "{% url 'register' %}";
+    }
+
+    // 게스트 버튼 → 지도 메인(index)로 이동
+    function goGuest() {
+      window.location.href = "{% url 'index' %}";
+    }
+  </script>
+</body>
+</html>

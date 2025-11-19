@@ -1,0 +1,107 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+/* 전체 래퍼 */
+.start-wrap {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 뒷 배경 지도 이미지 */
+.start-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url("../../static/img/start_background.png"); /* 배경 지도 이미지 경로 */
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.9);
+}
+
+/* 가운데 카드 정렬용 오버레이 */
+.start-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+/* 가운데 카드 */
+.start-card {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 24px;
+  padding: 60px 80px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  max-width: 900px;
+  width: 100%;
+}
+
+.start-logo-img {
+  width: 350px;
+  max-width: 50vw;
+  margin-bottom: 0px;
+}
+
+.start-subtitle {
+  margin: -20px 0 40px;
+  font-size: 28px;
+  font-weight: 800;
+  color: #15326f;
+}
+
+.start-btn-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.start-btn {
+  min-width: 150px;
+  padding: 16px 32px;
+  border-radius: 999px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  background: #263f9b;
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.35);
+  background: #1d3078;
+}
+
+@media (max-width: 768px) {
+  .start-card {
+    padding: 40px 24px;
+  }
+
+  .start-title {
+    font-size: 32px;
+  }
+
+  .start-subtitle {
+    font-size: 22px;
+  }
+}
