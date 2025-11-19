@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../../static/web/board.css">
+</head>
+<body>
+
+<!-- 왼쪽 패널 영역 (이 div 안에 코딩하기) -->
+<div class="panel_case">
+    <div class="board_container">
+
+
+        <!-- 신고 폼 -->
+        <form class="post_form" id="reportForm">
+            <!-- 신고 사유 선택 -->
+            <div class="form_group">
+                <label for="reportReason" class="form_label">신고 사유</label>
+                <select id="reportReason" class="form_select" required>
+                    <option value="">사유를 선택해주세요</option>
+                    <option value="spam">스팸/광고</option>
+                    <option value="inappropriate">부적절한 내용</option>
+                    <option value="harassment">욕설/혐오 발언</option>
+                    <option value="false_info">허위 정보</option>
+                    <option value="copyright">저작권 침해</option>
+                    <option value="other">기타</option>
+                </select>
+            </div>
+
+            <!-- 상세 내용 -->
+            <div class="form_group">
+                <label for="reportDetail" class="form_label">상세 내용</label>
+                <textarea id="reportDetail" class="form_textarea" placeholder="신고 사유에 대한 상세한 내용을 입력해주세요" required></textarea>
+            </div>
+
+            <!-- 버튼 영역 -->
+            <div class="form_buttons">
+                <button type="button" class="btn btn_cancel" onclick="cancelReport()">취소</button>
+                <button type="submit" class="btn btn_report">신고</button>
+            </div>
+        </form>
+
+        <!-- 신고 완료 메시지 -->
+        <div class="success_container" id="successMessage" style="display: none;">
+            <div class="success_content">
+                <h2 class="success_title">신고가 접수되었습니다</h2>
+                <p class="success_message">
+                    신고해주신 내용을 검토한 후<br>
+                    적절한 조치를 취하겠습니다.
+                </p>
+            </div>
+
+            <div class="success_button">
+                <button class="btn btn_primary" onclick="goToBoard()">
+                    게시판으로 돌아가기
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 신고 제출
+document.getElementById('reportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const reasonSelect = document.getElementById('reportReason');
+    const detail = document.getElementById('reportDetail').value.trim();
+
+    if (!reasonSelect.value) {
+        alert('신고 사유를 선택해주세요.');
+        return;
+    }
+
+    if (!detail) {
+        alert('상세 내용을 입력해주세요.');
+        return;
+    }
+
+    // 실제 구현에서는 서버로 신고 데이터 전송
+    const reportData = {
+        reason: reasonSelect.value,
+        detail: detail,
+        postId: getPostIdFromUrl() // URL에서 게시글 ID 추출
+    };
+
+    console.log('신고 제출:', reportData);
+
+    // 폼 숨기고 성공 메시지 표시
+    document.getElementById('reportForm').style.display = 'none';
+    document.getElementById('successMessage').style.display = 'block';
+});
+
+// URL에서 게시글 ID 추출 (실제 구현에서 사용)
+function getPostIdFromUrl() {
+    // 예시: ?postId=123 형태로 전달된다고 가정
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('postId') || 1;
+}
+
+// 취소 기능
+function cancelReport() {
+    if (confirm('신고를 취소하시겠습니까?')) {
+        goBack();
+    }
+}
+
+// 게시판으로 돌아가기
+function goToBoard() {
+    // 실제 구현에서는 게시판 목록 페이지로 이동
+    window.history.go(-2); // 신고 페이지와 상세 페이지를 건너뛰고 목록으로
+}
+
+// 뒤로가기 기능
+function goBack() {
+    window.history.back();
+}
+</script>
+
+</body>
+</html>
