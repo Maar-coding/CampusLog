@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../../static/web/reviews.css">
+</head>
+<body>
+
+<!-- 왼쪽 패널 영역 (이 div 안에 코딩하기) -->
+<div class="panel_case">
+    <div class="reviews_container">
+        <div class="reviews_header">
+            <div class="header_left">
+                <button class="back_button" onclick="goBack()">
+                    <span class="back_arrow">←</span>
+                </button>
+                <h1 class="reviews_title">후기</h1>
+            </div>
+        </div>
+        <div class="reviews_list" id="reviewsList">
+            <div class="loading" id="loading">후기를 불러오는 중...</div>
+        </div>
+        <div class="pagination" id="pagination" style="display: none;">
+            <button class="page_button" onclick="changePage('prev')" id="prevBtn">‹</button>
+            <div id="pageNumbers"></div>
+            <button class="page_button" onclick="changePage('next')" id="nextBtn">›</button>
+        </div>
+        <button class="floating_write_button" onclick="openWriteModal()">
+            <span class="write_icon">✏️</span>
+            <span class="write_text">후기 쓰기</span>
+        </button>
+    </div>
+</div>
+
+<script>
+let reviews = [];
+let currentPage = 1;
+let totalPages = 1;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadReviews();
+});
+
+async function loadReviews(page = 1) {
+    try {
+        showLoading(true);
+        const response = await mockApiCall(page);
+        reviews = response.reviews;
+        currentPage = response.currentPage;
+        totalPages = response.totalPages;
+        renderReviews();
+        renderPagination();
+    } catch (error) {
+        showError('후기를 불러오는데 실패했습니다.');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function mockApiCall(page) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const mockReviews = [
+                {
+                    id: 1,
+                    title: '정말 맛있어요!',
+                    content: '음식도 맛있고 서비스도 좋았습니다. 특히 파스타가 정말 맛있었어요.',
+                    author: '맛집탐험가',
+                    createdAt: '2024-01-15 14:30',
+                    rating: 5,
+                    likes: 12,
+                    hasImage: true
+                },
+                {
+                    id: 2,
+                    title: '괜찮은 식당',
+                    content: '음식은 괜찮았는데 조금 짰어요. 그래도 가격 대비 괜찮은 것 같습니다.',
+                    author: '일반인',
+                    createdAt: '2024-01-15 13:45',
+                    rating: 3,
+                    likes: 5
+                },
+                {
+                    id: 3,
+                    title: '최고의 맛집!',
+                    content: '여기 진짜 맛있어요! 친구들과 함께 갔는데 모두 만족했습니다.',
+                    author: '푸드러버',
+                    createdAt: '2024-01-15 12:20',
+                    rating: 5,
+                    likes: 23,
+                    hasImage: true
+                }
+            ];
+            resolve({ reviews: mockReviews, currentPage: page, totalPages: 1 });
+        }, 500);
+    });
+}
+
+function renderReviews() {
+    const reviewsList = document.getElementById('reviewsList');
+    if (reviews.length === 0) {
+        reviewsList.innerHTML = '<div class="empty_state"><div class="empty_state_text">후기가 없습니다</div></div>';
+        return;
+    }
+    reviewsList.innerHTML = reviews.map(review => `
+        <div class="review_item" onclick="toggleReviewExpand(${review.id})">
+            <div class="review_header">
+                <div class="review_header_left">
+                    <h3 class="review_title">${review.title}</h3>
+                </div>
+                <div class="review_header_right">
+                    <span class="review_date">${review.createdAt}</span>
+                    <button class="review_menu_button" onclick="toggleReviewMenu(${review.id}, event)">
+                        <span class="review_menu_dots">⋮</span>
+                    </button>
+                    <div class="review_menu_dropdown" id="reviewMenu${review.id}" style="display: none;">
+                        <button class="menu_item" onclick="reportReview(${review.id})">신고하기</button>
+                    </div>
+                </div>
+            </div>
+            <div class="review_content_area">
+                <p class="review_content" id="reviewContent${review.id}">${review.content}</p>
+                ${review.hasImage ? '<span class="image_indicator" id="imageIndicator${review.id}">🖼️</span>' : ''}
+            </div>
+            <div class="review_images" id="reviewImages${review.id}" style="display: none;">
+                ${review.hasImage ? '<img src="https://via.placeholder.com/300x200" alt="후기 이미지" class="review_image">' : ''}
+            </div>
+            <div class="review_meta">
+                <div class="review_meta_left">
+                    <span class="review_author">${review.author}</span>
+                    <div class="review_rating">
+                        <div class="star_rating">${generateStars(review.rating)}</div>
+                        <span class="rating_text">${review.rating}.0</span>
+                    </div>
+                </div>
+                <div class="review_stats">
+                    <button class="like_button" onclick="toggleLike(${review.id}, event)" id="likeBtn${review.id}">
+                        <span class="like_icon">♥</span>
+                        <span class="like_count" id="likeCount${review.id}">${review.likes}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function generateStars(rating) {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        stars += i <= rating ? '<span class="star">★</span>' : '<span class="star empty">★</span>';
+    }
+    return stars;
+}
+
+function renderPagination() {
+    const pagination = document.getElementById('pagination');
+    if (totalPages <= 1) {
+        pagination.style.display = 'none';
+        return;
+    }
+    pagination.style.display = 'flex';
+}
+
+function changePage(page) {
+    if (page === 'prev') page = Math.max(1, currentPage - 1);
+    else if (page === 'next') page = Math.min(totalPages, currentPage + 1);
+    if (page !== currentPage) loadReviews(page);
+}
+
+function showLoading(show) {
+    document.getElementById('loading').style.display = show ? 'flex' : 'none';
+}
+
+function showError(message) {
+    document.getElementById('reviewsList').innerHTML = `<div class="empty_state"><div class="empty_state_text">오류: ${message}</div></div>`;
+}
+
+function openWriteModal() {
+    console.log('후기 작성');
+}
+
+function toggleReviewExpand(reviewId) {
+    const reviewItem = document.querySelector(`[onclick="toggleReviewExpand(${reviewId})"]`);
+    const reviewContent = document.getElementById(`reviewContent${reviewId}`);
+    const reviewImages = document.getElementById(`reviewImages${reviewId}`);
+    const imageIndicator = document.getElementById(`imageIndicator${reviewId}`);
+
+    const isExpanded = reviewItem.classList.contains('expanded');
+
+    if (isExpanded) {
+        // 축소
+        reviewItem.classList.remove('expanded');
+        reviewContent.style.webkitLineClamp = '2';
+        reviewContent.style.overflow = 'hidden';
+        reviewImages.style.display = 'none';
+        if (imageIndicator) imageIndicator.style.display = 'inline';
+    } else {
+        // 확장
+        reviewItem.classList.add('expanded');
+        reviewContent.style.webkitLineClamp = 'unset';
+        reviewContent.style.overflow = 'visible';
+        reviewImages.style.display = 'block';
+        if (imageIndicator) imageIndicator.style.display = 'none';
+    }
+}
+
+function toggleReviewMenu(reviewId, event) {
+    event.stopPropagation();
+    const menu = document.getElementById(`reviewMenu${reviewId}`);
+    const isVisible = menu.style.display === 'block';
+
+    // 모든 메뉴 닫기
+    document.querySelectorAll('.review_menu_dropdown').forEach(dropdown => {
+        dropdown.style.display = 'none';
+    });
+
+    // 클릭한 메뉴만 토글
+    if (!isVisible) {
+        menu.style.display = 'block';
+    }
+}
+
+function toggleLike(reviewId, event) {
+    event.stopPropagation();
+    const likeBtn = document.getElementById(`likeBtn${reviewId}`);
+    const likeCount = document.getElementById(`likeCount${reviewId}`);
+    const isLiked = likeBtn.classList.contains('liked');
+
+    if (isLiked) {
+        // 좋아요 취소
+        likeBtn.classList.remove('liked');
+        likeCount.textContent = parseInt(likeCount.textContent) - 1;
+    } else {
+        // 좋아요 추가
+        likeBtn.classList.add('liked');
+        likeCount.textContent = parseInt(likeCount.textContent) + 1;
+    }
+}
+
+function reportReview(reviewId) {
+    console.log('후기 신고:', reviewId);
+    // 신고 로직 구현
+}
+
+function goBack() {
+    window.history.back();
+}
+
+// 메뉴 외부 클릭 시 닫기
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.review_menu_button')) {
+        document.querySelectorAll('.review_menu_dropdown').forEach(dropdown => {
+            dropdown.style.display = 'none';
+        });
+    }
+});
+</script>
+
+</body>
+</html>
