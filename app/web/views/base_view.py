@@ -17,6 +17,9 @@ def index(request):
 def test_page(request):
     return render(request, 'web/test.html')
 
+def start_page(request):
+    return render(request, 'web/start.html')
+
 def search_page(request):
     # (신규) GET /search : 검색 화면
     # ... 검색 로직 ...
