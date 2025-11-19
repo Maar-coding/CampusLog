@@ -1,6 +1,7 @@
 from django import forms
-from .models import Restaurant
-
+from web.models import Restaurant
+from django import forms
+from web.models import Review
 
 class RestaurantForm(forms.ModelForm):
     """
@@ -31,4 +32,24 @@ class RestaurantForm(forms.ModelForm):
             'address': forms.TextInput(attrs={'placeholder': '예) 서울특별시 강남구'}),
             'phone': forms.TextInput(attrs={'placeholder': '예) 02-1234-5678'}),
             'image_url': forms.URLInput(attrs={'placeholder': '예) https://.../image.jpg'}),
+        }
+
+
+# web/forms.py
+
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        # 사용자가 직접 입력해야 하는 필드만 나열 (작성자, 식당 정보는 뷰에서 자동으로 넣음)
+        fields = ['rating', 'content']
+
+        # (선택 사항) 위젯 설정으로 HTML 스타일링
+        widgets = {
+            'rating': forms.Select(attrs={'class': 'form_select'}),
+            'content': forms.Textarea(attrs={'class': 'form_input', 'rows': 5, 'placeholder': '솔직한 후기를 남겨주세요.'}),
+        }
+        labels = {
+            'rating': '별점',
+            'content': '후기 내용',
         }

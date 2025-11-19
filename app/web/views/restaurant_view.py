@@ -1,18 +1,57 @@
-import json
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
-from django.contrib.auth import login
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.shortcuts import render, get_object_or_404
-from web.models import Restaurant, Menu, Review
-from django.db.models import Avg, Count
 from web.forms import RestaurantForm
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from web.models import Restaurant, Review
+from web.forms import ReviewForm  # forms.py를 만들어야 합니다 (아래 설명)
+from django.db.models import Q, Avg, Count
+from django.core.paginator import Paginator
 
-# (중요) 이전에 만든 UserLocation 모델 임포트
-from web.models import UserLocation
+
+def restaurant_list(request):
+    """
+    GET /restaurant/list/
+    - 식당 목록 조회
+    - 기능: 검색(이름+주소), 카테고리 필터, 페이징, 평점/리뷰수 표시
+    """
+
+    # 1. 기본 쿼리셋 (평점 평균, 리뷰 개수 포함)
+    #    annotate를 미리 해둬야 리스트에서 "★4.5 (12)" 처럼 보여줄 수 있습니다.
+    restaurants = Restaurant.objects.annotate(
+        avg_rating=Avg('reviews__rating'),
+        review_count=Count('reviews')
+    ).order_by('-id')  # 최신 등록순
+
+    # 2. 검색 기능 (Query Parameter 'q')
+    query = request.GET.get('q')
+    if query:
+        # 이름(name) 또는 주소(address)에 검색어가 포함된 경우 필터링
+        restaurants = restaurants.filter(
+            Q(name__icontains=query) | Q(address__icontains=query)
+        )
+
+    # 3. 카테고리 필터 (Query Parameter 'category')
+    category = request.GET.get('category')
+    if category:
+        restaurants = restaurants.filter(category=category)
+
+    # 4. 페이지네이션 (한 페이지에 12개씩 카드형으로 보여주기 위함)
+    paginator = Paginator(restaurants, 12)
+    page = request.GET.get('page')
+    page_obj = paginator.get_page(page)
+
+    # 5. 카테고리 목록 전달 (필터 버튼 생성용)
+    #    모델에 정의된 choices를 가져옵니다. (Restaurant 모델에 있다고 가정)
+    categories = Restaurant.category.field.choices if hasattr(Restaurant, 'category') else []
+
+    context = {
+        'restaurants': page_obj,
+        'query': query,
+        'selected_category': category,
+        'categories': categories,
+    }
+
+    return render(request, 'web/restaurant_list.html', context)
 
 
 def restaurant_detail(request, id):
@@ -96,27 +135,98 @@ def restaurant_create(request):
     return render(request, 'web/restaurant_form.html', context)
 
 
+
+
+
 def restaurant_reviews(request, id):
-    # (신규) GET, POST /restaurant/{id}/reviews
-    # restaurant = get_object_or_404(Restaurant, pk=id)
+    """
+    GET /restaurant/{id}/reviews : 식당 전체 리뷰 목록 (페이징 + 정렬)
+    """
+
+    # 1. 식당 정보 가져오기
+    #    리뷰 페이지 상단에도 "OOO 식당의 리뷰 (4.5점)" 처럼 보여주기 위해
+    #    평점/개수 정보를 함께 가져옵니다.
+    restaurant = get_object_or_404(
+        Restaurant.objects.annotate(
+            avg_rating=Avg('reviews__rating'),
+            review_count=Count('reviews')
+        ),
+        pk=id
+    )
+
+    # 2. 정렬 기준 처리 (Query String 받기)
+    #    URL 예시: ?sort=recent (최신순), ?sort=high (높은순), ?sort=low (낮은순)
+    sort = request.GET.get('sort', 'recent')  # 기본값은 최신순
+
+    if sort == 'high':
+        order_by_field = '-rating'  # 별점 높은 순
+    elif sort == 'low':
+        order_by_field = 'rating'  # 별점 낮은 순
+    else:
+        order_by_field = '-created_at'  # 최신 순 (기본)
+
+    # 3. 리뷰 쿼리셋 가져오기
+    #    select_related('author'): 작성자 정보(닉네임 등)를 가져올 때
+    #    N+1 쿼리 문제를 방지하기 위해 미리 조인합니다.
+    reviews_list = restaurant.reviews.select_related('author').order_by(order_by_field)
+
+    # 4. 페이지네이션 (Paginator)
+    #    한 페이지당 10개씩 보여주기
+    page = request.GET.get('page', '1')
+    paginator = Paginator(reviews_list, 10)
+
+    reviews = paginator.get_page(page)
+
+    context = {
+        'restaurant': restaurant,
+        'reviews': reviews,
+        'sort': sort,  # 현재 정렬 기준을 템플릿에 전달 (버튼 활성화용)
+    }
+
+    return render(request, 'web/reviews.html', context)
+
+
+
+
+
+@login_required
+def review_write_form(request, id):
+    """
+    GET/POST /restaurant/{id}/review/write : 리뷰 작성
+    - 로그인한 사용자만 접근 가능
+    """
+    # 1. 어떤 식당에 대한 리뷰인지 확인
+    restaurant = get_object_or_404(Restaurant, pk=id)
+
+    # [선택 사항] 중복 리뷰 방지 (한 식당에 한 명당 1개만 가능하게 하려면)
+    if Review.objects.filter(restaurant=restaurant, author=request.user).exists():
+        messages.error(request, "이미 이 식당에 대한 리뷰를 작성하셨습니다.")
+        return redirect('restaurant_detail', id=id)
 
     if request.method == 'POST':
-        # (신규) POST : 리뷰 내용 저장 (로그인 필요)
-        # @login_required 데코레이터를 이 함수에 붙이거나,
-        # if not request.user.is_authenticated: ... 등으로 체크
-        pass  # ⬅️ 여기에 리뷰 "저장" 로직 구현
+        # 3. 데이터 저장 요청 (POST)
+        form = ReviewForm(request.POST)
 
-    # GET: 후기 목록 화면
-    # reviews = Review.objects.filter(restaurant=restaurant)
-    # context = {'restaurant': restaurant, 'reviews': reviews}
-    # return render(request, 'web/restaurant_reviews.html', context)
-    pass  # ⬅️ 여기에 리뷰 "목록" 로직 구현
+        if form.is_valid():
+            # commit=False: DB에 바로 저장하지 않고 메모리에만 객체 생성
+            review = form.save(commit=False)
 
+            # 누락된 정보 채우기 (작성자, 식당)
+            review.author = request.user
+            review.restaurant = restaurant
 
-@login_required  # 명세서: "로그인 필요"
-def review_write_form(request, id):
-    # (신규) GET /restaurant/{id}/reviews/write : 리뷰 작성 폼
-    # restaurant = get_object_or_404(Restaurant, pk=id)
-    # context = {'restaurant': restaurant}
-    # return render(request, 'web/review_write_form.html', context)
-    pass  # ⬅️ 여기에 리뷰 "작성 폼" 로직 구현
+            # 최종 저장
+            review.save()
+
+            # 작성 후 상세 페이지로 이동
+            return redirect('restaurant_detail', id=id)
+
+    else:
+        # 2. 폼 보여주기 요청 (GET)
+        form = ReviewForm()
+
+    context = {
+        'form': form,
+        'restaurant': restaurant
+    }
+    return render(request, 'web/review_write.html', context)

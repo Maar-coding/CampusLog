@@ -14,6 +14,8 @@ urlpatterns = [
     path('register', views.register, name='register'),
     # 2. 식당 및 리뷰 (명세서 기반)
     # {id} -> <int:id>
+    path('restaurant/list/', views.restaurant_list, name='restaurant_list'),
+
     path('restaurant/<int:id>', views.restaurant_detail, name='restaurant_detail'),  # GET
 
     path('restaurant/new/', views.restaurant_create, name='restaurant_create'),
