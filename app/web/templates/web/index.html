@@ -111,9 +111,45 @@
                     panel.style.display = 'block';
                     btn.classList.add('open');            // 버튼 이동
                     img.style.transform = 'scaleX(-1)';   // 버튼 속 화살표 좌우 반전
+                    attachLoginFormHandler();
                 })
                 .catch(err => console.error('패널 로딩 실패:', err));
         }
+        // ★ 로그인 폼을 AJAX로 처리하는 함수
+    function attachLoginFormHandler() {
+        const panel = document.getElementById('search_panel');
+        if (!panel) return;
+
+        const form = panel.querySelector('.login_form');
+        if (!form) return;
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();  // 기본 페이지 이동 막기
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,   // csrf_token 포함됨
+            })
+            .then(res => res.text())
+            .then(html => {
+                // 응답으로 온 login.html(에러 포함)을 패널 안에 다시 렌더
+                panel.innerHTML = html;
+
+                // 새로 렌더된 폼에도 다시 핸들러 붙이기 (실패 시)
+                attachLoginFormHandler();
+            })
+            .catch(err => {
+                console.error('로그인 중 오류:', err);
+                const errorEl = panel.querySelector('#loginError');
+                if (errorEl) {
+                    errorEl.textContent = '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+                    errorEl.style.display = 'block';
+                }
+            });
+        });
+    }
 
 
     </script>
