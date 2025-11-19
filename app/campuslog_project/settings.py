@@ -96,6 +96,6 @@ STATIC_URL = '/static/'
 
 LOGIN_REDIRECT_URL = '/'  # 로그인 성공 시 이동할 URL (메인 페이지)
 LOGOUT_REDIRECT_URL = '/' # 로그아웃 성공 시 이동할 URL (메인 페이지)
-
+AUTH_USER_MODEL = 'web.CustomUser'
 # Default primary key field type
 # (Django 3.1에는 이 설정이 없습니다. 3.2부터 추가됨)
