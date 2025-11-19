@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="Python 3.10 virtualenv at ~/IdeaProjects/web/venvs/campuslog" jdkType="Python SDK" />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/app" isTestSource="false" />
+    </content>
+    <orderEntry type="jdk" jdkName="Python 3.10 virtualenv at C:\Web1\venvs\campuslog" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="TemplatesService">
+    <option name="TEMPLATE_CONFIGURATION" value="Django" />
+    <option name="TEMPLATE_FOLDERS">
+      <list>
+        <option value="$MODULE_DIR$/app/web/templates" />
+        <option value="$MODULE_DIR$/app/web/templates/web" />
+      </list>
+    </option>
   </component>
 </module>

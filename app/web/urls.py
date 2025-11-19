@@ -31,10 +31,6 @@ urlpatterns = [
     # {postid} -> <int:postid>
     path('board/<str:category>/<int:postid>', views.post_detail, name='post_detail'),  # GET
 
-    # 4. API (명세서 + 이전에 만든 API)
-    # (명세서에 있던 API)
-    path('api/restaurants', views.restaurant_list_api, name='api_restaurant_list'),
-    path('api/restaurants/<int:id>', views.restaurant_detail_api, name='api_restaurant_detail'),
 
     # (이전에 우리가 대화로 만든 위치 API)
     path('api/locations', views.user_locations_api, name='api_locations'),
