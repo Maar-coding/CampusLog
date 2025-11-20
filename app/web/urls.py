@@ -27,7 +27,7 @@ urlpatterns = [
 
     # 3. 게시판 (명세서 기반)
     # {category} -> <str:category>
-    # GET (게시글 목록), POST (게시글 저장)
+    # GET (게시글 목록), POST (게시글 저장) hello
     path('board/<str:category>', views.board_list, name='board_list'),
 
     path('board/<str:category>/write', views.post_write_form, name='post_write_form'),  # GET
