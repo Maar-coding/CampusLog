@@ -104,54 +104,56 @@
             }
 
             // 패널이 닫혀있으면 열기
-            fetch('login')
+            fetch('search_panel.html')
                 .then(res => res.text())
                 .then(html => {
                     panel.innerHTML = html;
                     panel.style.display = 'block';
                     btn.classList.add('open');            // 버튼 이동
                     img.style.transform = 'scaleX(-1)';   // 버튼 속 화살표 좌우 반전
-                    attachLoginFormHandler();
+
+                    /* 검색페이지 게시판 이동 드롭다운 함수 */
+                    initPanelDropdown();
                 })
                 .catch(err => console.error('패널 로딩 실패:', err));
         }
-        // ★ 로그인 폼을 AJAX로 처리하는 함수
-    function attachLoginFormHandler() {
-        const panel = document.getElementById('search_panel');
-        if (!panel) return;
 
-        const form = panel.querySelector('.login_form');
-        if (!form) return;
 
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();  // 기본 페이지 이동 막기
+        // search_panel.html
+        // 게시판 이동 드롭다운
+        function initPanelDropdown() {
+            /* 변수 선언 */
+            const dropdown_button = document.getElementById("dropdown_button");
+            const dropdown_menu   = document.getElementById("dropdown_menu");
 
-            const formData = new FormData(form);
+            if (!dropdown_button || !dropdown_menu) {
+                console.warn("드롭다운 요소를 찾을 수 없습니다.");
+                return;
+            }
 
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,   // csrf_token 포함됨
-            })
-            .then(res => res.text())
-            .then(html => {
-                // 응답으로 온 login.html(에러 포함)을 패널 안에 다시 렌더
-                panel.innerHTML = html;
+            // Someday 버튼 클릭시 작동
+            dropdown_button.addEventListener("click", (e) => {
+                e.stopPropagation();                     
+                dropdown_menu.classList.toggle("open");  // open 클래스 토글
+            });
 
-                // 새로 렌더된 폼에도 다시 핸들러 붙이기 (실패 시)
-                attachLoginFormHandler();
-            })
-            .catch(err => {
-                console.error('로그인 중 오류:', err);
-                const errorEl = panel.querySelector('#loginError');
-                if (errorEl) {
-                    errorEl.textContent = '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
-                    errorEl.style.display = 'block';
+            // 바깥 클릭시 작동
+            document.addEventListener("click", (e) => {
+                // 버튼, 메뉴 영역이 아닌 곳 클릭하면 닫기
+                if (
+                !e.target.closest(".dropdown_button") &&
+                !e.target.closest(".dropdown_menu")
+                ) {
+                    dropdown_menu.classList.remove("open");
+
+                    // people_menu도 같이 닫고 싶으면 이렇게 (없으면 그냥 무시)
+                    const people_menu = document.getElementById("people_menu");
+                    if (people_menu) {
+                        people_menu.classList.remove("open");
+                    }
                 }
             });
-        });
-    }
-
-
+        }
     </script>
 </body>
 </html>
