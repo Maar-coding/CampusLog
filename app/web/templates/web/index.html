@@ -113,47 +113,58 @@
                     img.style.transform = 'scaleX(-1)';   // 버튼 속 화살표 좌우 반전
 
                     /* 검색페이지 게시판 이동 드롭다운 함수 */
-                    initPanelDropdown();
+                    
+                    initSortDropdown();
                 })
                 .catch(err => console.error('패널 로딩 실패:', err));
         }
 
 
         // search_panel.html
-        // 게시판 이동 드롭다운
-        function initPanelDropdown() {
-            /* 변수 선언 */
-            const dropdown_button = document.getElementById("dropdown_button");
-            const dropdown_menu   = document.getElementById("dropdown_menu");
+        // 정렬방법 드롭다운 텍스트 바꾸기
+        function initSortDropdown() {
+            const button = document.getElementById("sort_dropdown_button");
+            const menu = document.getElementById("sort_dropdown_menu");
+            const items = menu.querySelectorAll(".dropdown_list");
 
-            if (!dropdown_button || !dropdown_menu) {
-                console.warn("드롭다운 요소를 찾을 수 없습니다.");
-                return;
-            }
-
-            // Someday 버튼 클릭시 작동
-            dropdown_button.addEventListener("click", (e) => {
-                e.stopPropagation();                     
-                dropdown_menu.classList.toggle("open");  // open 클래스 토글
+            // 버튼 클릭 → 메뉴 열기/닫기
+            button.addEventListener("click", (e) => {
+                e.stopPropagation();
+                menu.classList.toggle("open");
             });
 
-            // 바깥 클릭시 작동
-            document.addEventListener("click", (e) => {
-                // 버튼, 메뉴 영역이 아닌 곳 클릭하면 닫기
-                if (
-                !e.target.closest(".dropdown_button") &&
-                !e.target.closest(".dropdown_menu")
-                ) {
-                    dropdown_menu.classList.remove("open");
+            // li 클릭 이벤트 등록
+            items.forEach(item => {
+                item.addEventListener("click", () => {
 
-                    // people_menu도 같이 닫고 싶으면 이렇게 (없으면 그냥 무시)
-                    const people_menu = document.getElementById("people_menu");
-                    if (people_menu) {
-                        people_menu.classList.remove("open");
-                    }
+                    // 1️⃣ 버튼 텍스트 변경
+                    button.childNodes[0].textContent = item.textContent;
+
+                    // 2️⃣ 드롭다운 닫기
+                    menu.classList.remove("open");
+
+                    // 3️⃣ 선택된 항목에 따라 함수 실행
+                    handleSort(item.textContent);
+                });
+            });
+
+            // 바깥 클릭하면 닫기
+            document.addEventListener("click", (e) => {
+                if (!e.target.closest(".dropdown")) {
+                    menu.classList.remove("open");
                 }
             });
         }
+
+        // 정렬방법 드롭다운 선택시 함수 실행
+        // 정렬방법 선택시 API 호출 기준 변경
+        function handleSort(type) {
+            if (type === "가나다순")      loadRestaurants("name");
+            else if (type === "별점순")   loadRestaurants("rating");
+            else if (type === "거리순")   loadRestaurants("distance");
+            else if (type === "리뷰개수순") loadRestaurants("review");
+        }
+
     </script>
 </body>
 </html>
