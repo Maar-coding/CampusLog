@@ -1,4 +1,43 @@
 <!-- 왼쪽 패널 영역 (이 div 안에 코딩하기) -->
-<div class="panel_case">
-   
-</div>
+<div class="panel_case">  <!-- (component.css) -->
+    
+
+    <section class="search_panel_header">
+        <div class="community_button" onclick="changePanel('board')">게시판</div>
+        <input type="text" class="search" placeholder="검색어">
+        <img src="../../static/img/search.svg" class="search_button">
+    </section>
+    <section class="search_panel_filter_case">
+        <img src="../../static/img/restaurant.svg" class="search_panel_filter">
+        <img src="../../static/img/cafe.svg" class="search_panel_filter">
+        <img src="../../static/img/play.svg" class="search_panel_filter">
+        <!-- 드롭다운 -->
+        <div class="sort_dropdown_button" id="sort_dropdown_button">가나다순
+            <img src="../../static/img/right_arrow.svg" class="dropdown_arrow">
+        </div>
+        <ul class="sort_dropdown_menu" id="sort_dropdown_menu">
+            <li class="dropdown_list">가나다순</li>
+            <li class="dropdown_list">별점순</li>
+            <li class="dropdown_list">거리순</li>
+            <li class="dropdown_list">리뷰개수순</li>
+        </ul>
+    </section>
+
+    <!-- 식당 리스트 영역 -->
+    <div id="store_list"></div>
+
+    <!-- 식당 카드 탬플릿 (화면엔 출력 X) -->
+    <template id="store_card_template">
+        <div class="store_card">
+            <img class="store_img" src="" alt="식당 사진">
+            <div class="store_info_case">
+                <p class="store_name">가게이름</p>
+                <p class="store_time">영업시간 00:00 ~ 00:00</p>
+                <p class="store_review" onclick="changePanel('review')">후기 보기</p>
+            </div>
+        </div>
+    </template>
+
+    
+    
+</div>  

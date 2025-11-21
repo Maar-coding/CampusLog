@@ -1,0 +1,177 @@
+.search_panel_header {
+    margin: 28px auto 0;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.community_button {
+    width: 80px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid #757575;
+    position: relative;
+    margin-left: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;  /* 마우스 올렸을 때(호버) 마우스포인터 모양 손가락 모양으로 바뀌기 */
+}
+
+.dropdown_arrow {
+    width: auto;
+    height: 12px;
+    transform: rotate(90deg); /* 오른쪽으로 90도 회전  */
+    position: absolute;
+    right: 8px;
+}
+
+.search {
+    width: 148px;
+    height: 32px;
+    position: absolute;
+    right: 68px;
+    color: #000000;
+    font-family: ABeeZee;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+}
+
+.search_button {
+    width: 32px;
+    height: 32px;
+    position: absolute;
+    right: 24px;
+}
+
+.search_panel_filter_case {
+    height: 32px;
+    position: relative;
+    margin: 24px 0 0 135px;
+    display: flex;
+    align-items: center;
+}
+
+.search_panel_filter {
+    width: 32px;
+    height: 32px;
+    margin-right: 8px;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.sort_dropdown_button {
+    width: 88px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid #757575;
+    position: absolute;
+    right: 24px;
+    margin: 0;
+    padding-left: 8px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    font-size: 12px;
+    font-weight: 400;
+    color: #000000;
+    cursor: pointer;  /* 마우스 올렸을 때(호버) 마우스포인터 모양 손가락 모양으로 바뀌기 */
+}
+
+.sort_dropdown_menu {
+    width: 88px;
+    position: absolute;
+    top: 100%; /* dropdown_button 바로 아래 */
+    right: 24px;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;  /* 자식 요소 세로로 정렬 */
+    box-sizing: border-box;  /* 패딩, 테두리가 크기에 영향 주지 않기 */
+    list-style: none;  /* 드롭다운 스타일 제거 */
+    z-index: 20;       /* 요소가 겹쳤을 때 위에 보이기 */
+    max-height: 0;     /* 최대 높이 0 (가렸다가 나중에 보여주기 위함) */
+    overflow: hidden;  /* 요소 안보이게 */
+}
+
+.sort_dropdown_menu.open {
+    transition: max-height 1.0s ease-in;  /* 0.7초에 걸쳐서 최대 높이 변경 (부드럽게 애니메이션) */
+    max-height: 100vh;  /* 최대 높이 변경 (드롭다운이 내려오도록) */
+}
+
+.dropdown_list {
+    width: 100%;
+    height: 20px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 400;
+    color: #000000;
+    border: 1px solid #757575;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.dropdown_list:hover {
+    background-color: #f0f0f0;
+}
+
+#store_list {
+    margin-top: 40px;
+}
+
+.store_card {
+    width: 328px;
+    height: 104px;
+    border: 1px solid #000;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    padding: 8px;
+}
+
+.store_img {
+    width: 80px;
+    height: 80px;
+}
+
+.store_info_case {
+    width: 208px;
+    height: 80px;
+    margin-left: 16px;
+}
+
+.store_name {
+    color: #000;
+    font-family: "Meera Inimai";
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    margin: 0 0 8px 0;
+}
+
+.store_time {
+    color: #000;
+    font-family: ABeeZee;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    margin: 0 0 4px 0;
+}
+
+.store_review {
+    color: #2E49E1;
+    font-family: ABeeZee;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    margin: 0;
+}
