@@ -3,7 +3,7 @@
     
 
     <section class="search_panel_header">
-        <div class="community_button" onclick="changePanel('board_detail')">게시판</div>
+        <div class="community_button" onclick="changePanel('board')">게시판</div>
         <input type="text" class="search" placeholder="검색어">
         <img src="../../static/img/search.svg" class="search_button">
     </section>
@@ -33,7 +33,7 @@
             <div class="store_info_case">
                 <p class="store_name">가게이름</p>
                 <p class="store_time">영업시간 00:00 ~ 00:00</p>
-                <p class="store_review">후기 보기</p>
+                <p class="store_review" onclick="changePanel('review')">후기 보기</p>
             </div>
         </div>
     </template>
