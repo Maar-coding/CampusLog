@@ -27,8 +27,8 @@
         <img src="../../static/img/right_arrow.svg" class="panel_arrow">
     </div>
 
-    <!-- 검색 패널 (component.css) -->
-    <div id="search_panel" style="display: none;"></div>
+    <!-- 기본 패널 (component.css) -->
+    <aside id="panel" style="display: none;"></aside>
 
 
     <script>
@@ -78,46 +78,89 @@
 
         // 유저 좌표 받아오기
         fetch('/api/locations') // 경로로 GET 요청
-            .then(res => res.json())
-            .then(data => {
-                data.forEach(user => {
-                    const marker = new kakao.maps.Marker({
-                        map: map, // 마커 찍을 지도 지정
-                        position: new kakao.maps.LatLng(user.lat, user.lng), // 마커 위치 지정
-                    });
-
+        .then(res => res.json())
+        .then(data => {
+            data.forEach(user => {
+                const marker = new kakao.maps.Marker({
+                    map: map, // 마커 찍을 지도 지정
+                    position: new kakao.maps.LatLng(user.lat, user.lng), // 마커 위치 지정
                 });
-            });
 
+            });
+        });
+
+
+       
+
+
+
+        let currentPanel = "search";     // 마지막으로 열린 패널
+
+
+        // 패널 여닫기
         // 패널 버튼 누를 때 작동
         function panelButton() {
-            const btn = document.querySelector('.panel_button');
-            const panel = document.getElementById('search_panel');
-            const img = document.querySelector('.panel_arrow');
+            const btn = document.querySelector('.panel_button');  // 패널 버튼
+            const img = document.querySelector('.panel_arrow');   // 패널 버튼 화살표
+            const panel = document.getElementById("panel");
+            const isOpen = panel.style.display === "block";
 
             // 패널이 열려있으면 닫기
-            if (panel.style.display === 'block') {
-                panel.style.display = 'none';
+            if (isOpen) {
+                panel.style.display = "none";
                 btn.classList.remove('open');        // 버튼 이동
                 img.style.transform = 'scaleX(1)';   // 버튼 속 화살표 좌우 반전
                 return;
             }
 
             // 패널이 닫혀있으면 열기
-            fetch('search_panel.html')
+            // -> 마지막으로 연 패널 (처음이면 검색 패널)
+            const panelName = currentPanel;
+            btn.classList.add('open');            // 버튼 이동
+            img.style.transform = 'scaleX(-1)';   // 버튼 속 화살표 좌우 반전
+            openPanel(panelName);
+        }
+
+        // 패널 열기
+        function openPanel(panelName) {
+            const panel = document.getElementById("panel");
+
+            panel.style.display = "block";   // 패널 틀 보여주기
+            changePanel(panelName);          // 내부 내용 교체
+        }
+
+        // 패널 내용 교체
+        function changePanel(panelName) {
+            const panel = document.getElementById("panel");
+
+            currentPanel = panelName;      // 마지막 패널 기억
+
+            // panelName_panel.html 파일 가져오기
+            fetch(`${panelName}_panel.html`)
                 .then(res => res.text())
                 .then(html => {
-                    panel.innerHTML = html;
-                    panel.style.display = 'block';
-                    btn.classList.add('open');            // 버튼 이동
-                    img.style.transform = 'scaleX(-1)';   // 버튼 속 화살표 좌우 반전
-
-                    /* 검색페이지 게시판 이동 드롭다운 함수 */
-                    
-                    initSortDropdown();
+                    panel.innerHTML = html;      // 패널 내용 교체
+                    initPanelByName(panelName);  // 패널별 초기화
                 })
-                .catch(err => console.error('패널 로딩 실패:', err));
+                .catch(err => console.error(`${panelName}_panel.html 로딩 실패`, err));
         }
+
+        
+        function initPanelByName(panelName) {
+            // search_panel.html이 로드된 경우에만 실행
+            if (panelName === "search") {
+                initSortDropdown();
+            }
+
+            // 나중에 다른 패널들도 생기면 이렇게 추가하면 됨
+            // else if (panelName === "store") {
+            //     initStorePanel();
+            // }
+            // else if (panelName === "review") {
+            //     initReviewPanel();
+            // }
+        }
+
 
 
         // search_panel.html
@@ -126,6 +169,12 @@
             const button = document.getElementById("sort_dropdown_button");
             const menu = document.getElementById("sort_dropdown_menu");
             const items = menu.querySelectorAll(".dropdown_list");
+
+            // 요소 못 찾으면 바로 종료 (다른 패널에서 불렸을 때 대비)
+            if (!button || !menu) {
+                console.warn("정렬 드롭다운 요소를 찾지 못했습니다.");
+                return;
+            }
 
             // 버튼 클릭 → 메뉴 열기/닫기
             button.addEventListener("click", (e) => {

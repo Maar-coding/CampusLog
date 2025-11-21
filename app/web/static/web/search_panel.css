@@ -14,6 +14,7 @@
     margin-left: 24px;
     display: flex;
     align-items: center;
+    justify-content: center;
     cursor: pointer;  /* 마우스 올렸을 때(호버) 마우스포인터 모양 손가락 모양으로 바뀌기 */
 }
 
