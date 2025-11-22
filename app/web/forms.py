@@ -2,6 +2,7 @@ from django import forms
 from web.models import Restaurant
 from django import forms
 from web.models import Review
+from web.models import Post
 
 class RestaurantForm(forms.ModelForm):
     """
@@ -52,4 +53,23 @@ class ReviewForm(forms.ModelForm):
         labels = {
             'rating': '별점',
             'content': '후기 내용',
+        }
+
+#게시글 작성 폼 추가
+class PostForm(forms.ModelForm):
+    """게시판 글 작성 폼"""
+
+    class Meta:
+        model = Post
+        fields = ['title', 'content']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '제목을 입력하세요'
+            }),
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 10,
+                'placeholder': '내용을 입력하세요'
+            }),
         }

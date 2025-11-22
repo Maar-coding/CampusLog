@@ -1,39 +1,88 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import Q
+from web.models import Post
+from web.forms import PostForm
 
-# ==================================================================
-# 2. 게시판 뷰 (HTML 렌더링)
-# ==================================================================
+
 def board(request):
+    """메인 게시판 페이지"""
     return render(request, 'web/board.html')
 
 
-
-def board_list(request, category):
-    # (신규) GET, POST /board/{category}
-
+def board_list(request):
+    """
+    GET /board/list : 게시판 목록 조회
+    POST /board/list : 게시글 작성 (로그인 필요)
+    """
     if request.method == 'POST':
-        # (신규) POST : 작성된 게시글을 저장 (로그인 필요)
-        pass  # ⬅️ 여기에 게시글 "저장" 로직 구현
+        # 로그인 체크
+        if not request.user.is_authenticated:
+            messages.error(request, '로그인이 필요합니다.')
+            return redirect('login')
 
-    # GET: 게시판 목록 화면
-    # posts = Post.objects.filter(category=category)
-    # context = {'category': category, 'posts': posts}
-    # return render(request, 'web/board_list.html', context)
-    pass  # ⬅️ 여기에 게시글 "목록" 로직 구현
+        # 게시글 작성 처리
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            messages.success(request, '게시글이 작성되었습니다.')
+            return redirect('post_detail', postid=post.id)
+        else:
+            messages.error(request, '게시글 작성에 실패했습니다.')
+
+    # GET 요청: 게시글 목록 조회
+    posts = Post.objects.select_related('author')
+
+    # 검색 기능
+    query = request.GET.get('q')
+    if query:
+        posts = posts.filter(
+            Q(title__icontains=query) |
+            Q(content__icontains=query)
+        )
+
+    # 페이지네이션 (한 페이지에 15개)
+    paginator = Paginator(posts, 15)
+    page = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page)
+
+    context = {
+        'posts': page_obj,
+        'query': query,
+    }
+
+    return render(request, 'web/board_panel.html', context)
 
 
-def post_detail(request, category, postid):
-    # (신규) GET /board/{category}/{postid} : 게시글 상세 화면
-    # post = get_object_or_404(Post, pk=postid, category=category)
-    # context = {'post': post}
-    # return render(request, 'web/post_detail.html', context)
-    pass  # ⬅️ 여기에 게시글 "상세" 로직 구현
+def post_detail(request, postid):
+    """
+    GET /board/{postid} : 게시글 상세 조회
+    """
+    post = get_object_or_404(
+        Post.objects.select_related('author'),
+        pk=postid
+    )
+
+    context = {
+        'post': post,
+    }
+
+    return render(request, 'web/board_detail_panel.html', context)
 
 
-@login_required  # 명세서: "로그인 필요"
-def post_write_form(request, category):
-    # (신규) GET /board/{category}/write : 게시글 작성 폼
-    # context = {'category': category}
-    # return render(request, 'web/post_write_form.html', context)
-    pass  # ⬅️ 여기에 게시글 "작성 폼" 로직 구현
+@login_required
+def post_write_form(request):
+    """
+    GET /board/write : 게시글 작성 폼
+    """
+    form = PostForm()
+
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'web/board_upload.html', context)
