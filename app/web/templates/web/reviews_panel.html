@@ -61,37 +61,7 @@ async function loadReviews(page = 1) {
 function mockApiCall(page) {
     return new Promise((resolve) => {
         setTimeout(() => {
-            const mockReviews = [
-                {
-                    id: 1,
-                    title: '정말 맛있어요!',
-                    content: '음식도 맛있고 서비스도 좋았습니다. 특히 파스타가 정말 맛있었어요.',
-                    author: '맛집탐험가',
-                    createdAt: '2024-01-15 14:30',
-                    rating: 5,
-                    likes: 12,
-                    hasImage: true
-                },
-                {
-                    id: 2,
-                    title: '괜찮은 식당',
-                    content: '음식은 괜찮았는데 조금 짰어요. 그래도 가격 대비 괜찮은 것 같습니다.',
-                    author: '일반인',
-                    createdAt: '2024-01-15 13:45',
-                    rating: 3,
-                    likes: 5
-                },
-                {
-                    id: 3,
-                    title: '최고의 맛집!',
-                    content: '여기 진짜 맛있어요! 친구들과 함께 갔는데 모두 만족했습니다.',
-                    author: '푸드러버',
-                    createdAt: '2024-01-15 12:20',
-                    rating: 5,
-                    likes: 23,
-                    hasImage: true
-                }
-            ];
+            const mockReviews = [];
             resolve({ reviews: mockReviews, currentPage: page, totalPages: 1 });
         }, 500);
     });
