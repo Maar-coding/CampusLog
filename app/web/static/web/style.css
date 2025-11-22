@@ -26,8 +26,20 @@ html, body {
     width: 44px;
     height: 44px;
     margin-right: 28px;
+    cursor: pointer;
 }
 
+.store_marker .store_marker_img {
+    width: 26px;
+    height: 26px;
+    transition: 0.3s ease;   /* 부드러운 전환 */
+    cursor: pointer;
+}
+
+/* 마커 필터링시 흐리게 만들기 */
+.marker_blur {
+    opacity: 0.4;
+}
 
 .panel_button {
     width: 40px;
