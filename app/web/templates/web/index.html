@@ -18,9 +18,9 @@
     <div id="map"></div>
 
     <div class="filter_case">
-        <img src="../../static/img/restaurant.svg" class="filter_icon">
-        <img src="../../static/img/cafe.svg" class="filter_icon">
-        <img src="../../static/img/play.svg" class="filter_icon">
+        <img src="../../static/img/restaurant.png" class="filter_icon" id="restaurant">
+        <img src="../../static/img/cafe.png" class="filter_icon" id="cafe">
+        <img src="../../static/img/play.png" class="filter_icon" id="play">
     </div>
 
     <div class="panel_button" onclick="panelButton()">
@@ -37,6 +37,7 @@
         let myMarker;
         const myImageSrc = "../../static/img/my_marker.svg"; // 내 마커 이미지
 
+        const markers = [];
 
         // HTMl이 로드 된 다음에 실행 (카카오맵 불러올 때 오류 제거)
         document.addEventListener('DOMContentLoaded', function () {
@@ -60,6 +61,13 @@
                     map: map,
                     image: myMarkerImage
                 });
+
+                // 매장 마커 리스트
+                createMarker(37.2801321, 127.911008, ["restaurant"]);    // 마녀포차
+                createMarker(37.279957, 127.91065, ["restaurant"]);      // 털보네
+                createMarker(37.279957, 127.91107543, ["restaurant"]);   // 모지리
+                createMarker(37.279768, 127.910881, ["cafe"]);           // 헤세드
+                createMarker(37.27963435, 127.9108379, ["restaurant"]);  // 고모네                
             }
 
             // 내 위치 가져오기
@@ -90,12 +98,115 @@
         });
 
 
-       
+        // 매장 마커 관련 코드
+
+        // 필터가 적용됐나 여부
+        let currentFilter = null;
+
+        // 매장 마커 만들기 코드
+        function createMarker(lat, lng, tags) {
+            const el = document.createElement("div");
+            el.className = "store_marker";
+
+            // 여기서 이미지 자동 선택
+            const imgSrc = getMarkerImage(tags);
+
+            // HTML 삽입
+            el.innerHTML = `<img src="${imgSrc}" class="store_marker_img">`;
+
+            const overlay = new kakao.maps.CustomOverlay({
+                position: new kakao.maps.LatLng(lat, lng),
+                content: el,
+                map: map
+            });
+
+            overlay.tags = tags;      // 태그 정보 저장
+            overlay.el = el;          // DOM 저장 (CSS 적용용)
+
+            // 식당 마커 누르면 식당 정보 패널 열기
+            el.addEventListener("click", (e) => {
+                e.stopPropagation();
+
+                const panelName = "restaurant";      // 열고 싶은 패널 이름
+                currentPanel = panelName;        // panelButton()에서 참고하는 값 업데이트
+
+                const panel = document.getElementById("panel");
+                const btn   = document.querySelector(".panel_button");
+                const img   = document.querySelector(".panel_arrow");
+
+                // 패널 보이기 + 버튼 상태 '열림'
+                panel.style.display = "block";
+                if (btn) btn.classList.add("open");
+                if (img) img.style.transform = "scaleX(-1)";
+
+                // ⭐ 패널 열기 (openPanel → changePanel 흐름 그대로 탑승)
+                openPanel(panelName);
+            });
+
+
+            markers.push(overlay);
+            return overlay;
+        }
+
+        // 태그별로 마커 이미지 적용
+        function getMarkerImage(tags) {
+            if (tags.includes("restaurant")) return "../../static/img/restaurant.png";
+            if (tags.includes("cafe")) return "../../static/img/cafe.png";
+            return "../../static/img/play.png";
+        }
+
+        // 매장 마커 필터 실행
+        function filterMarkers(selectedTag) {
+            markers.forEach(marker => {
+                if (marker.tags.includes(selectedTag)) {
+                    marker.el.classList.remove("marker_blur"); // 기본
+                } else {
+                    marker.el.classList.add("marker_blur");    // 흐림 효과
+                }
+            });
+        }
+
+        // 필터링 해제 함수
+        function toggleFilter(tag) {
+            // 같은 태그를 다시 누르면
+            if (currentFilter === tag) {
+                clearFilter();
+                currentFilter = null;
+                return;
+            }
+
+            // 다른 태그를 누르면 → 해당 태그로 필터 변경
+            currentFilter = tag;
+            filterMarkers(tag);
+        }
+
+        // 필터링 해제 함수
+        function clearFilter() {
+            markers.forEach(marker => {
+                marker.el.classList.remove("marker_blur");
+            });
+        }
 
 
 
+
+        // 필터 아이콘 클릭 시 필터링 실행
+        document.getElementById("restaurant").addEventListener("click", () => {
+            toggleFilter("restaurant");
+        });
+
+        document.getElementById("cafe").addEventListener("click", () => {
+            toggleFilter("cafe");
+        });
+
+        document.getElementById("play").addEventListener("click", () => {
+            toggleFilter("play");
+        });
+
+
+
+        // 패널 관련 JS
         let currentPanel = "search";     // 마지막으로 열린 패널
-
 
         // 패널 여닫기
         // 패널 버튼 누를 때 작동
@@ -150,7 +261,8 @@
             // search_panel.html이 로드된 경우에만 실행
             if (panelName === "search") {
                 initSortDropdown();
-                handleSort(type);
+                handleSort("가나다순");
+                initSearchPanel();
             }
 
             // 나중에 다른 패널들도 생기면 이렇게 추가하면 됨
@@ -169,13 +281,15 @@
         function initSortDropdown() {
             const button = document.getElementById("sort_dropdown_button");
             const menu = document.getElementById("sort_dropdown_menu");
-            const items = menu.querySelectorAll(".dropdown_list");
 
             // 요소 못 찾으면 바로 종료 (다른 패널에서 불렸을 때 대비)
             if (!button || !menu) {
                 console.warn("정렬 드롭다운 요소를 찾지 못했습니다.");
                 return;
             }
+
+            // menu == NULL이면 오류, 오류방지 위치 (위 코드에서 잡아줌)
+            const items = menu.querySelectorAll(".dropdown_list");
 
             // 버튼 클릭 → 메뉴 열기/닫기
             button.addEventListener("click", (e) => {
@@ -214,6 +328,121 @@
             else if (type === "거리순")   loadRestaurants("distance");
             else if (type === "리뷰개수순") loadRestaurants("review");
         }
+
+        // ✅ storeData 기준으로 정렬해서 화면에 뿌리는 함수
+        function loadRestaurants(sortKey) {
+            // 기존 데이터 복사
+            let sorted = [...storeData];
+
+            if (sortKey === "name") {
+                sorted.sort((a, b) => a.name.localeCompare(b.name)); // 가나다순
+            }
+
+            // 별점, 거리, 리뷰개수는 나중에 데이터 생기면 추가
+            // else if (sortKey === "rating") { ... }
+            // else if (sortKey === "distance") { ... }
+            // else if (sortKey === "review") { ... }
+
+            renderStoreList(sorted);
+}
+
+
+        // 백엔드 데이터 연동으로 변경 필요
+
+        /* ---------------------------
+        1) 식당 데이터 리스트
+        ---------------------------- */
+        const storeData = [
+            {
+                id: 1,
+                name: "마녀포차",
+                time: "18:00 ~ 02:00",
+                image: "../../static/img/restaurant.png"
+            },
+            {
+                id: 2,
+                name: "흥업분식",
+                time: "11:00 ~ 21:00",
+                image: "../../static/img/restaurant.png"
+            },
+            {
+                id: 3,
+                name: "카페 OO",
+                time: "10:00 ~ 22:00",
+                image: "../../static/img/cafe.png"
+            }
+            // 실제 리스트로 교체하면 됨
+        ];
+
+
+        /* ---------------------------
+        2) 리스트 렌더 함수
+        ---------------------------- */
+        function renderStoreList(list) {
+            const container = document.getElementById("store_list");
+            const template = document.getElementById("store_card_template");
+
+            container.innerHTML = "";
+
+            if (!list || list.length === 0) {
+                container.innerHTML = `<p class="no_result">검색 결과가 없습니다.</p>`;
+                return;
+            }
+
+            list.forEach(store => {
+                const clone = template.content.cloneNode(true);
+
+                clone.querySelector(".store_img").src = store.image;
+                clone.querySelector(".store_name").textContent = store.name;
+                clone.querySelector(".store_time").textContent = store.time;
+
+                container.appendChild(clone);
+            });
+        }
+
+
+        /* ---------------------------
+        3) 검색 실행 함수
+        ---------------------------- */
+        function runSearch() {
+            const keyword = document.getElementById("search_input").value.trim().toLowerCase();
+
+            if (!keyword) {
+                renderStoreList(storeData);  // 검색어 없으면 전체 출력
+                return;
+            }
+
+            const filtered = storeData.filter(store =>
+                store.name.toLowerCase().includes(keyword)
+            );
+
+            renderStoreList(filtered);
+        }
+
+
+        /* ---------------------------
+        4) 검색 패널 초기화 함수
+        ---------------------------- */
+        function initSearchPanel() {
+            const input = document.getElementById("search_input");
+            const button = document.querySelector(".search_button");
+
+            // 엔터 입력 시 실행
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    runSearch();
+                }
+            });
+
+            // 검색 버튼 클릭 시 실행
+            button.addEventListener("click", () => {
+                runSearch();
+            });
+
+            // 패널 처음 열릴 때 전체 리스트 출력
+            renderStoreList(storeData);
+        }
+
 
     </script>
 </body>
