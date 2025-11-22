@@ -8,6 +8,13 @@ class Restaurant(models.Model):
     """
     식당 모델
     """
+    # 카테고리 선택을 위한 CHOICES 추가
+    CATEGORY_CHOICES = [
+        ('restaurant', '식당'),
+        ('dessert', '디저트'),
+        ('play', '놀거리'),
+    ]
+
     # 요일 선택을 위한 CHOICES
     DAY_CHOICES = [
         ('MON', '월요일'),
@@ -20,6 +27,7 @@ class Restaurant(models.Model):
         ]
 
     name = models.CharField(max_length=100)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='restaurant')
     image_url = models.URLField(max_length=500, null=True, blank=True)
     address = models.CharField(max_length=200, default='')
     open_time = models.TimeField(default=time(9, 0))  # 기본값: 오전 9시
@@ -118,21 +126,20 @@ class Review(models.Model):
 
 class Post(models.Model):
     """
-    (신규) 커뮤니티 게시글 모델
-    /board/{category} 에서 사용됩니다.
+    통합 커뮤니티 게시글 모델
+    카테고리 구분 없이 하나의 게시판으로 운영
     """
+
     # 1. '누가' 썼는지 (User와 N:1 관계)
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
 
-    # 2. '어느' 게시판인지 (URL의 {category}에 해당)
-    category = models.CharField(max_length=100)  # 예: "notice", "free"
 
     title = models.CharField(max_length=255)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"[{self.category}] {self.title} (작성자: {self.author.username})"
+        return f"{self.title} (작성자: {self.author.username})"

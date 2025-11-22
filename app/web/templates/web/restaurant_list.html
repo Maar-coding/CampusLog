@@ -1,17 +1,17 @@
 
 {% block content %}
 <div class="list_container">
-    
+
     <div class="filter_section">
         <form method="get" class="search_form">
             <input type="text" name="q" value="{{ query|default:'' }}" placeholder="식당 이름 또는 지역 검색">
             <button type="submit">검색</button>
         </form>
-        
+
         <div class="category_links">
             <a href="?q={{ query|default:'' }}" class="{% if not selected_category %}active{% endif %}">전체</a>
             {% for code, name in categories %}
-                <a href="?category={{ code }}&q={{ query|default:'' }}" 
+                <a href="?category={{ code }}&q={{ query|default:'' }}"
                    class="{% if selected_category == code %}active{% endif %}">
                    {{ name }}
                 </a>
@@ -33,12 +33,12 @@
             <div class="card_info">
                 <span class="category_badge">{{ restaurant.get_category_display }}</span>
                 <h3 class="name">{{ restaurant.name }}</h3>
-                
+
                 <div class="rating_info">
                     <span class="star">★ {{ restaurant.avg_rating|default:0|floatformat:1 }}</span>
                     <span class="count">({{ restaurant.review_count }})</span>
                 </div>
-                
+
                 <p class="address">{{ restaurant.address }}</p>
             </div>
         </div>
@@ -53,9 +53,9 @@
         {% if restaurants.has_previous %}
             <a href="?page={{ restaurants.previous_page_number }}&q={{ query }}&category={{ selected_category }}">이전</a>
         {% endif %}
-        
+
         <span>{{ restaurants.number }} / {{ restaurants.paginator.num_pages }}</span>
-        
+
         {% if restaurants.has_next %}
             <a href="?page={{ restaurants.next_page_number }}&q={{ query }}&category={{ selected_category }}">다음</a>
         {% endif %}

@@ -136,7 +136,7 @@
             currentPanel = panelName;      // 마지막 패널 기억
 
             // panelName_panel.html 파일 가져오기
-            fetch(`${panelName}_panel.html`)
+            fetch(`/${panelName}_panel`)
                 .then(res => res.text())
                 .then(html => {
                     panel.innerHTML = html;      // 패널 내용 교체

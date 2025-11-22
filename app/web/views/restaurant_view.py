@@ -10,45 +10,98 @@ from django.core.paginator import Paginator
 
 def restaurant_list(request):
     """
-    GET /restaurant/list/
-    - 식당 목록 조회
-    - 기능: 검색(이름+주소), 카테고리 필터, 페이징, 평점/리뷰수 표시
+    GET /restaurant : 식당 검색 페이지
+    - 키워드 검색 (이름, 주소)
+    - 카테고리 필터링 (식당/디저트/놀거리)
+    - 정렬 옵션 (가나다순/별점순/거리순/리뷰수순)
     """
-
     # 1. 기본 쿼리셋 (평점 평균, 리뷰 개수 포함)
-    #    annotate를 미리 해둬야 리스트에서 "★4.5 (12)" 처럼 보여줄 수 있습니다.
     restaurants = Restaurant.objects.annotate(
         avg_rating=Avg('reviews__rating'),
         review_count=Count('reviews')
-    ).order_by('-id')  # 최신 등록순
+    )
 
-    # 2. 검색 기능 (Query Parameter 'q')
-    query = request.GET.get('q')
+    # 2. 키워드 검색
+    query = request.GET.get('q', '')
     if query:
-        # 이름(name) 또는 주소(address)에 검색어가 포함된 경우 필터링
         restaurants = restaurants.filter(
             Q(name__icontains=query) | Q(address__icontains=query)
         )
 
-    # 3. 카테고리 필터 (Query Parameter 'category')
-    category = request.GET.get('category')
+    # 3. 카테고리 필터
+    category = request.GET.get('category', '')
     if category:
         restaurants = restaurants.filter(category=category)
 
-    # 4. 페이지네이션 (한 페이지에 12개씩 카드형으로 보여주기 위함)
+    # 4. 정렬 옵션
+    sort = request.GET.get('sort', 'name')  # 기본값: 가나다순
+
+    if sort == 'name':
+        # 가나다순
+        restaurants = restaurants.order_by('name')
+    elif sort == 'rating':
+        # 별점순 (높은 순)
+        restaurants = restaurants.order_by('-avg_rating', '-review_count')
+    elif sort == 'review_count':
+        # 리뷰 개수순 (많은 순)
+        restaurants = restaurants.order_by('-review_count', '-avg_rating')
+    elif sort == 'distance':
+        # 거리순 - 사용자 위치 필요
+        user_lat = request.GET.get('lat')
+        user_lng = request.GET.get('lng')
+
+        if user_lat and user_lng:
+            try:
+                user_lat = float(user_lat)
+                user_lng = float(user_lng)
+
+                # 거리 계산을 위해 리스트로 변환 후 정렬
+                restaurants_list = list(restaurants)
+
+                def calculate_distance(restaurant):
+                    """두 지점 간 거리 계산 (Haversine formula)"""
+                    if not restaurant.lat or not restaurant.lng:
+                        return float('inf')
+
+                    lat1, lng1 = math.radians(user_lat), math.radians(user_lng)
+                    lat2, lng2 = math.radians(restaurant.lat), math.radians(restaurant.lng)
+
+                    dlat = lat2 - lat1
+                    dlng = lng2 - lng1
+
+                    a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlng / 2) ** 2
+                    c = 2 * math.asin(math.sqrt(a))
+
+                    # 지구 반지름 (km)
+                    radius = 6371
+                    return radius * c
+
+                restaurants_list.sort(key=calculate_distance)
+                restaurants = restaurants_list
+            except (ValueError, TypeError):
+                # 위치 정보가 잘못된 경우 기본 정렬
+                restaurants = restaurants.order_by('name')
+        else:
+            # 위치 정보가 없으면 기본 정렬
+            restaurants = restaurants.order_by('name')
+    else:
+        # 기본 정렬
+        restaurants = restaurants.order_by('name')
+
+    # 5. 페이지네이션
     paginator = Paginator(restaurants, 12)
-    page = request.GET.get('page')
+    page = request.GET.get('page', 1)
     page_obj = paginator.get_page(page)
 
-    # 5. 카테고리 목록 전달 (필터 버튼 생성용)
-    #    모델에 정의된 choices를 가져옵니다. (Restaurant 모델에 있다고 가정)
-    categories = Restaurant.category.field.choices if hasattr(Restaurant, 'category') else []
+    # 6. 카테고리 목록
+    categories = Restaurant.CATEGORY_CHOICES
 
     context = {
         'restaurants': page_obj,
         'query': query,
         'selected_category': category,
         'categories': categories,
+        'sort': sort,
     }
 
     return render(request, 'web/restaurant_list.html', context)

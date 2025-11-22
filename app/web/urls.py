@@ -14,7 +14,7 @@ urlpatterns = [
     path('register', views.register, name='register'),
     # 2. 식당 및 리뷰 (명세서 기반)
     # {id} -> <int:id>
-    path('restaurant/list/', views.restaurant_list, name='restaurant_list'),
+    path('restaurant', views.restaurant_list, name='restaurant_list'),
 
     path('restaurant/<int:id>', views.restaurant_detail, name='restaurant_detail'),  # GET
 
@@ -25,16 +25,18 @@ urlpatterns = [
 
     path('restaurant/<int:id>/reviews/write', views.review_write_form, name='review_write_form'),  # GET
 
-    # 3. 게시판 (명세서 기반)
-    # {category} -> <str:category>
-    # GET (게시글 목록), POST (게시글 저장) hello
-    path('board/<str:category>', views.board_list, name='board_list'),
+    # 3. 통합 게시판 (카테고리 없음)
+    # /board -> 게시판 목록 (GET), 게시글 작성 (POST)
+    path('board/list', views.board_list, name='board_list'),
 
-    path('board/<str:category>/write', views.post_write_form, name='post_write_form'),  # GET
+    # /board/write -> 게시글 작성 폼
+    path('board/write', views.post_write_form, name='post_write_form'),
 
-    # {postid} -> <int:postid>
-    path('board/<str:category>/<int:postid>', views.post_detail, name='post_detail'),  # GET
+    # /board/{postid} -> 게시글 상세
+    path('board/<int:postid>', views.post_detail, name='post_detail'),
 
+    # 게시판 패널용 경로 추가
+    path('board_panel', views.board_list, name='board_panel'),
 
     # (이전에 우리가 대화로 만든 위치 API)
     path('api/locations', views.user_locations_api, name='api_locations'),
