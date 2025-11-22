@@ -7,3 +7,7 @@ __pycache__/
 *.DS_Store
 
 app/web/migrations
+
+.idea/
+
+*.iml
