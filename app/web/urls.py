@@ -16,7 +16,7 @@ urlpatterns = [
     # {id} -> <int:id>
     path('restaurant', views.restaurant_list, name='restaurant_list'),
 
-    path('restaurant/<int:id>', views.restaurant_detail, name='restaurant_detail'),  # GET
+    path('restaurant/<int:id>/', views.restaurant_detail, name='restaurant_detail'),  # GET
 
     path('restaurant/new/', views.restaurant_create, name='restaurant_create'),
 
@@ -41,4 +41,5 @@ urlpatterns = [
     # (이전에 우리가 대화로 만든 위치 API)
     path('api/locations', views.user_locations_api, name='api_locations'),
     path('api/update_location', views.update_user_location_api, name='api_update_location'),
+    path('api/restaurants', views.restaurant_list_api, name='api_restaurant_list'),
 ]

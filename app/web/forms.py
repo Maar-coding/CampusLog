@@ -12,7 +12,7 @@ class RestaurantForm(forms.ModelForm):
     class Meta:
         model = Restaurant
         # 사용자가 입력할 필드 목록
-        fields = ['name', 'address', 'open_time', 'close_time', 'holiday', 'phone', 'image_url']
+        fields = ['name', 'address', 'open_time', 'close_time', 'holiday', 'phone', 'lat', 'lng', 'image_url']
 
         # 폼 필드에 대한 추가 설정 (라벨 한글화)
         labels = {
@@ -22,6 +22,8 @@ class RestaurantForm(forms.ModelForm):
             'close_time': '마감 시간',
             'holiday': '휴무일',
             'phone': '전화번호',
+            'lat': '위도',
+            'lng': '경도',
             'image_url': '대표 이미지 URL',
         }
 
