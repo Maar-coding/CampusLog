@@ -6,6 +6,32 @@ from web.models import Restaurant, Review
 from web.forms import ReviewForm  # forms.py를 만들어야 합니다 (아래 설명)
 from django.db.models import Q, Avg, Count
 from django.core.paginator import Paginator
+from django.http import JsonResponse
+
+def restaurant_list_api(request):
+    restaurants = Restaurant.objects.all()
+
+    data = []
+    for r in restaurants:
+        # 2. 카테고리에 따라 이미지 자동 선택 (프론트엔드 로직을 백엔드로 이동)
+        img_src = "../../static/img/restaurant.png"
+        if r.category == 'cafe':
+            img_src = "../../static/img/cafe.png"
+        elif r.category == 'play':
+            img_src = "../../static/img/play.png"
+
+        # 3. 프론트엔드 'storeData' 구조와 똑같이 만듭니다.
+        data.append({
+            'id': r.id,
+            'name': r.name,
+            'lat': r.lat,
+            'lng': r.lng,
+            'image': img_src,
+            'tags': [r.category]  # 프론트엔드는 배열 형태의 tags를 원함
+        })
+
+    # 4. JSON으로 변환하여 반환
+    return JsonResponse(data, safe=False)
 
 
 def restaurant_list(request):
@@ -163,7 +189,7 @@ def restaurant_detail(request, id):
         'rating_stats': rating_stats,
     }
 
-    return render(request, 'web/restaurant.html', context)
+    return render(request, 'web/restaurant_panel.html', context)
 
 
 # @login_required 로그인 필요시 삽입
