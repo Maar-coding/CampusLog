@@ -21,6 +21,7 @@
         .form_group select,
         .form_group input[type="number"],
         .form_group input[type="number"],
+        .form_group input[type="text"],
         .form_group textarea {
             width: 100%;
             padding: 10px;
@@ -88,6 +89,10 @@
             <div class="form_group">
                 {{ form.phone.label_tag }}
                 {{ form.phone }}
+            </div>
+            <div class="form_group">
+                {{ form.category.label_tag }}
+                {{ form.category }}
             </div>
             <div class="form_group">
                 {{ form.lat.label_tag }}

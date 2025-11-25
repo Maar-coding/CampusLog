@@ -11,7 +11,7 @@ class Restaurant(models.Model):
     # 카테고리 선택을 위한 CHOICES 추가
     CATEGORY_CHOICES = [
         ('restaurant', '식당'),
-        ('dessert', '디저트'),
+        ('cafe', '카페'),
         ('play', '놀거리'),
     ]
 

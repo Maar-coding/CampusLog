@@ -123,7 +123,7 @@
             el.addEventListener("click", (e) => {
                 e.stopPropagation();
 
-                const panelName = "restaurant";      // 열고 싶은 패널 이름
+                const panelName = `restaurant/${id}`;      // 열고 싶은 패널 이름
                 currentPanel = panelName;        // panelButton()에서 참고하는 값 업데이트
 
                 const panel = document.getElementById("panel");
