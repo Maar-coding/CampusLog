@@ -262,7 +262,7 @@ def restaurant_reviews(request, id):
         'sort': sort,  # 현재 정렬 기준을 템플릿에 전달 (버튼 활성화용)
     }
 
-    return render(request, 'web/reviews.html', context)
+    return render(request, 'web/reviews_panel.html', context)
 
 
 
