@@ -6,7 +6,7 @@ from . import views
 urlpatterns = [
     # 1. 메인 페이지 및 검색
     path('', views.index, name='index'),  # GET /
-    path('search_panel', views.search_page, name='search_panel'),  # GET /search
+    path('search', views.search_page, name='search_panel'),  # GET /search
 
     path('test', views.test_page, name='test'),
     path('start', views.start_page, name='start'),
