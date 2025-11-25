@@ -100,7 +100,7 @@
         let currentFilter = null;
 
         // 매장 마커 만들기 코드
-        function createMarker(lat, lng, tags) {
+        function createMarker(lat, lng, tags, id) {
             const el = document.createElement("div");
             el.className = "store_marker";
 
@@ -136,7 +136,7 @@
                 if (img) img.style.transform = "scaleX(-1)";
 
                 // ⭐ 패널 열기 (openPanel → changePanel 흐름 그대로 탑승)
-                openPanel(panelName);
+                openPanel(panelName, id);
             });
 
 
@@ -229,38 +229,44 @@
         }
 
         // 패널 열기
-        function openPanel(panelName) {
+        function openPanel(panelName, id = null) {
             const panel = document.getElementById("panel");
 
             panel.style.display = "block";   // 패널 틀 보여주기
-            changePanel(panelName);          // 내부 내용 교체
+            changePanel(panelName, id);          // 내부 내용 교체
         }
 
         // 패널 내용 교체
-        function changePanel(panelName) {
+        function changePanel(panelName, id=null) {
             const panel = document.getElementById("panel");
 
             currentPanel = panelName;      // 마지막 패널 기억
 
+            let url = `/${panelName}`;
+
+            // 2. ⭐ 식당 패널이고 ID가 있으면, URL 뒤에 ID를 붙임
+            // 예: /restaurant_panel/3
+            if (panelName === "restaurant" && id) {
+                url = `/${panelName}/${id}`;
+            }
             // panelName_panel.html 파일 가져오기
-            fetch(`/${panelName}_panel`)
+            fetch(url)
                 .then(res => res.text())
                 .then(html => {
                     panel.innerHTML = html;      // 패널 내용 교체
-                    initPanelByName(panelName);  // 패널별 초기화
+                    initPanelByName(panelName,id);  // 패널별 초기화
                 })
                 .catch(err => console.error(`${panelName}_panel.html 로딩 실패`, err));
         }
 
         
-        function initPanelByName(panelName) {
+        function initPanelByName(panelName,id) {
             // search_panel.html이 로드된 경우에만 실행
             if (panelName === "search") {
                 initSortDropdown();
                 handleSort("가나다순");
                 initSearchPanel();
             }
-
             // 나중에 다른 패널들도 생기면 이렇게 추가하면 됨
             // else if (panelName === "store") {
             //     initStorePanel();
@@ -362,7 +368,7 @@
 
                     // (2) 지도에 마커 찍기
                     storeData.forEach(store => {
-                        createMarker(store.lat, store.lng, store.tags);
+                        createMarker(store.lat, store.lng, store.tags, store.id);
                     });
 
                      // (3) 패널에 리스트 렌더링 (초기화)
@@ -392,10 +398,13 @@
 
             list.forEach(store => {
                 const clone = template.content.cloneNode(true);
+                const idEl = clone.querySelector(".store_id");
+
 
                 clone.querySelector(".store_img").src = store.image;
                 clone.querySelector(".store_name").textContent = store.name;
                 clone.querySelector(".store_time").textContent = store.time;
+                clone.querySelector(".store_id").textContent = store.id;
 
                 container.appendChild(clone);
             });
