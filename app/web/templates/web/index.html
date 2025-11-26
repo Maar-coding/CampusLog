@@ -276,6 +276,39 @@
             // }
         }
 
+        function renderStoreList(list) {
+            const container = document.getElementById("store_list");
+            const template = document.getElementById("store_card_template");
+
+            container.innerHTML = "";
+
+            if (!list || list.length === 0) {
+                container.innerHTML = `<p class="no_result">검색 결과가 없습니다.</p>`;
+                return;
+            }
+
+            list.forEach(store => {
+                const clone = template.content.cloneNode(true);
+
+                // ⭐ store_card div에 id 주입
+                const card = clone.querySelector(".store_card");
+                card.dataset.id = store.id;
+
+                clone.querySelector(".store_img").src = store.image;
+                clone.querySelector(".store_name").textContent = store.name;
+                clone.querySelector(".store_time").textContent = store.time;
+
+                // ⭐ "후기 보기" 클릭 이벤트 연결
+                const reviewBtn = clone.querySelector(".store_review");
+                reviewBtn.addEventListener("click", function () {
+                    const id = card.dataset.id;       // ⭐ 카드에서 id 가져오기
+                    openReviewPanel("restaurant_reviews", id);
+                });
+
+                container.appendChild(clone);
+            });
+        }
+
 
 
         // search_panel.html

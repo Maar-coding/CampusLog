@@ -12,7 +12,7 @@
     <div class="reviews_container">
         <div class="reviews_header">
             <div class="header_left">
-                <button class="back_button" onclick="changePanel('search')">
+                <button class="back_button" onclick="changePanel('search_panel')">
                     <span class="back_arrow">←</span>
                 </button>
                 <h1 class="reviews_title">후기</h1>
@@ -26,7 +26,7 @@
             <div id="pageNumbers"></div>
             <button class="page_button" onclick="changePage('next')" id="nextBtn">›</button>
         </div>
-        <button class="floating_write_button" onclick="openWriteModal()">
+        <button class="floating_write_button" onclick="changePanel('reviews_write_form')">
             <span class="write_icon">✏️</span>
             <span class="write_text">후기 쓰기</span>
         </button>
