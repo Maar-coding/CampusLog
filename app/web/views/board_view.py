@@ -9,7 +9,7 @@ from web.forms import PostForm
 
 def board(request):
     """메인 게시판 페이지"""
-    return render(request, 'web/board.html')
+    return render(request, 'web/board_panel.html')
 
 
 def board_list(request):
