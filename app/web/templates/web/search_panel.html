@@ -8,9 +8,10 @@
         <img src="../../static/img/search.svg" class="search_button">
     </section>
     <section class="search_panel_filter_case">
-        <img src="../../static/img/restaurant.png" class="search_panel_filter">
-        <img src="../../static/img/cafe.png" class="search_panel_filter">
-        <img src="../../static/img/play.png" class="search_panel_filter">
+        <img src="../../static/img/restaurant.png" class="search_panel_filter" onclick="onFilterClick('restaurant', this)">
+        <img src="../../static/img/cafe.png" class="search_panel_filter" onclick="onFilterClick('cafe', this)">
+        <img src="../../static/img/play.png" class="search_panel_filter" onclick="onFilterClick('play', this)">
+        
         <!-- 드롭다운 -->
         <div class="sort_dropdown_button" id="sort_dropdown_button">가나다순
             <img src="../../static/img/right_arrow.svg" class="dropdown_arrow">
@@ -28,12 +29,12 @@
 
     <!-- 식당 카드 탬플릿 (화면엔 출력 X) -->
     <template id="store_card_template">
-        <div class="store_card">
+        <div class="store_card" data-id="">
             <img class="store_img" src="" alt="식당 사진">
             <div class="store_info_case">
                 <p class="store_name">가게이름</p>
                 <p class="store_time">영업시간 00:00 ~ 00:00</p>
-                <p class="store_review" onclick="openReviewPanel('{{ restaurant.id })">후기 보기</p>
+                <p class="store_review">후기 보기</p>
                 <p class="store_id" style="display:none;"></p>
             </div>
         </div>

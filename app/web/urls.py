@@ -14,7 +14,6 @@ urlpatterns = [
     path('register', views.register, name='register'),
     # 2. 식당 및 리뷰 (명세서 기반)
     # {id} -> <int:id>
-    path('restaurant', views.restaurant_list, name='restaurant_list'),
 
     path('restaurant/<int:id>/', views.restaurant_detail, name='restaurant_detail'),  # GET
 
@@ -37,6 +36,14 @@ urlpatterns = [
 
     # 게시판 패널용 경로 추가
     path('board_panel', views.board_list, name='board_panel'),
+
+
+
+    path('select-restaurant', views.restaurant_select, name='restaurant_select'),
+
+    # 2. 메뉴 등록 페이지 (식당 ID가 필요)
+    path('restaurant/<int:restaurant_id>/menu/add', views.menu_create, name='menu_create'),
+
 
     # (이전에 우리가 대화로 만든 위치 API)
     path('api/locations', views.user_locations_api, name='api_locations'),

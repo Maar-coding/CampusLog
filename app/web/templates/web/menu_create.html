@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>메뉴 등록</title>
+    <style>
+        /* (이전과 동일한 폼 스타일) */
+        body { font-family: sans-serif; background-color: #f8f9fa; padding: 20px; }
+        .panel_case { max-width: 600px; margin: 0 auto; background-color: #fff; border-radius: 8px; padding: 24px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .form_group { margin-bottom: 15px; }
+        .form_group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form_group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+
+        .btn_group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 4px; color: #fff; font-weight: bold; cursor: pointer; }
+        .btn_add { background-color: #17a2b8; }
+        .btn_finish { background-color: #28a745; }
+
+        /* 이미 등록된 메뉴 리스트 스타일 */
+        .existing_menus { margin-top: 40px; border-top: 2px solid #eee; padding-top: 20px; }
+        .menu_item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f1f1; }
+    </style>
+</head>
+<body>
+    <div class="panel_case">
+        <h3>[{{ restaurant.name }}] 메뉴 추가</h3>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form_group">
+                {{ form.name.label_tag }}
+                {{ form.name }}
+            </div>
+            <div class="form_group">
+                {{ form.price.label_tag }}
+                {{ form.price }}
+            </div>
+            <div class="form_group">
+                {{ form.image_url.label_tag }}
+                {{ form.image_url }}
+            </div>
+
+            <div class="btn_group">
+                <button type="submit" name="add_another" class="btn btn_add">저장하고 계속 추가</button>
+                <button type="submit" class="btn btn_finish">저장하고 종료</button>
+            </div>
+        </form>
+
+        <div class="existing_menus">
+            <h4>현재 등록된 메뉴 ({{ existing_menus.count }}개)</h4>
+            {% for menu in existing_menus %}
+                <div class="menu_item">
+                    <span>{{ menu.name }}</span>
+                    <span>{{ menu.price }}원</span>
+                </div>
+            {% empty %}
+                <p style="color:#999;">아직 등록된 메뉴가 없습니다.</p>
+            {% endfor %}
+        </div>
+
+        <div style="margin-top: 20px;">
+            <a href="{% url 'restaurant_select' %}" style="color:#666; text-decoration:none;">&lt; 식당 목록으로 돌아가기</a>
+        </div>
+    </div>
+</body>
+</html>

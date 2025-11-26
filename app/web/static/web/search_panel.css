@@ -59,6 +59,10 @@
     margin-right: 8px;
 }
 
+.blurred-filter {
+    opacity: 0.4;
+}
+
 .dropdown {
     position: relative;
 }
