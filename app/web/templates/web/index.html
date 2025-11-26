@@ -263,7 +263,8 @@
         function initPanelByName(panelName,id) {
             // search_panel.html이 로드된 경우에만 실행
             if (panelName === "search") {
-                loadStores()
+                onFilterClick();
+                loadStores();
                 initSortDropdown();
                 handleSort("가나다순");
                 initSearchPanel();
