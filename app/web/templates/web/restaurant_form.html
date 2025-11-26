@@ -19,6 +19,9 @@
         .form_group input[type="time"],
         .form_group input[type="number"],
         .form_group select,
+        .form_group input[type="number"],
+        .form_group input[type="number"],
+        .form_group input[type="text"],
         .form_group textarea {
             width: 100%;
             padding: 10px;
@@ -27,6 +30,7 @@
             box-sizing: border-box; /* 패딩 포함해서 width 100% */
             font-size: 1rem;
         }
+
 
         .submit_btn {
             display: inline-block;
@@ -42,6 +46,8 @@
             transition: background-color 0.2s;
         }
         .submit_btn:hover { background-color: #218838; }
+
+
     </style>
 </head>
 <body>
@@ -85,9 +91,22 @@
                 {{ form.phone }}
             </div>
             <div class="form_group">
+                {{ form.category.label_tag }}
+                {{ form.category }}
+            </div>
+            <div class="form_group">
+                {{ form.lat.label_tag }}
+                {{ form.lat }}
+            </div>
+            <div class="form_group">
+                {{ form.lng.label_tag }}
+                {{ form.lng }}
+            </div>
+            <div class="form_group">
                 {{ form.image_url.label_tag }}
                 {{ form.image_url }}
             </div>
+
 
             <button type="submit" class="submit_btn">식당 등록하기</button>
         </form>
