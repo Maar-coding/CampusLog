@@ -429,6 +429,108 @@
             });
         }
 
+        // 회원가입 폼 AJAX 제출 + 성공 팝업 → 로그인 패널 이동
+        function handleRegisterSubmit(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: form.method || "POST",
+                body: formData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+                    .then(res =>
+                            res.text().then(html => ({res, html}))
+                    )
+                    .then(({res, html}) => {
+                        const panel = document.getElementById("panel");
+
+                        // 1️⃣ 서버가 500 같은 에러를 낸 경우 → 성공으로 취급하지 않기
+                        if (!res.ok) {
+                            console.error("회원가입 서버 오류:", res.status);
+                            openPopup("회원가입 중 서버 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.");
+                            return;
+                        }
+
+                        // 2️⃣ 에러 메시지가 있으면 (form.errors / error_message) → 실패로 간주
+                        if (html.includes('id="registerError"')) {
+                            panel.innerHTML = html;  // 에러 포함된 register.html 다시 렌더링
+                            return;
+                        }
+
+                        // 3️⃣ 여기까지 왔으면 "회원가입 성공"으로 간주
+                        openPopup("회원가입에 성공하였습니다!", () => {
+                            // 확인 누르면 로그인 패널로 이동
+                            changePanel("login");
+                        });
+                    })
+                    .catch(err => {
+                        console.error("회원가입 요청 실패", err);
+                        openPopup("네트워크 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.");
+                    });
+
+            return false;
+        }
+
+        // 로그인 폼 AJAX 제출 + 실패 시 패널 안에서만 갱신 + 성공 시 팝업 후 search 패널로 이동
+        function handleLoginSubmit(event) {
+            event.preventDefault();  // 기본 동작(페이지 이동) 막기
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: form.method || "POST",
+                body: formData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+                    .then(res => res.text().then(html => ({res, html})))
+                    .then(({res, html}) => {
+                        const panel = document.getElementById("panel");
+
+                        // 1️⃣ 서버 에러 (500 등) 이면 성공 취급 X
+                        if (!res.ok) {
+                            console.error("로그인 서버 오류:", res.status);
+                            openPopup("로그인 중 서버 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.");
+                            return;
+                        }
+
+                        // 2️⃣ 실패 여부 판단: 로그인 템플릿에는 id="loginError" 가 들어옴
+                        if (html.includes('id="loginError"')) {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, "text/html");
+                            const loginPanel = doc.querySelector(".panel_case.login_panel");
+
+                            if (loginPanel) {
+                                panel.innerHTML = loginPanel.outerHTML;
+                            } else {
+                                // 혹시 못 찾으면 그대로 확인용으로 붙이기
+                                panel.innerHTML = html;
+                            }
+                            return;  // 실패 처리 끝
+                        }
+
+                        // 3️⃣ 여기까지 왔으면 로그인 성공으로 간주
+                        //    패널은 그대로 두고, 팝업 띄웠다가 확인 누르면 search 패널로 내용만 교체
+                        openPopup("로그인에 성공하였습니다!", () => {
+                            changePanel("search");   // 패널은 열린 상태 그대로, 안의 컨텐츠만 search로
+                        });
+                    })
+                    .catch(err => {
+                        console.error("로그인 요청 실패", err);
+                        openPopup("네트워크 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.");
+                    });
+
+            return false;
+        }
+
+
         // 정렬방법 드롭다운 선택시 함수 실행
         // 정렬방법 선택시 API 호출 기준 변경
         function handleSort(type) {
@@ -559,6 +661,25 @@
             // 패널 처음 열릴 때 전체 리스트 출력
             renderStoreList(storeData);
         }
+
+        function openPopup(message, onConfirm) {
+          const overlay = document.getElementById("globalPopup");
+          const msgEl = document.getElementById("globalPopupMessage");
+          const btn = document.getElementById("globalPopupConfirm");
+
+          if (!overlay || !msgEl || !btn) return;
+
+          msgEl.textContent = message;
+          overlay.style.display = "flex";
+
+          btn.onclick = () => {
+            overlay.style.display = "none";
+            if (typeof onConfirm === "function") {
+              onConfirm();
+            }
+          };
+        }
+
 
 
     </script>

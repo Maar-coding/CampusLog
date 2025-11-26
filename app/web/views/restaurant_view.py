@@ -3,10 +3,47 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from web.models import Restaurant, Review
-from web.forms import ReviewForm  # forms.py를 만들어야 합니다 (아래 설명)
-from django.db.models import Q, Avg, Count
+from web.forms import ReviewForm, MenuForm  # forms.py를 만들어야 합니다 (아래 설명)
+from django.db.models import Avg, Count
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+
+
+# 1. 식당 선택 뷰 (리스트 보여주기)
+def restaurant_select(request):
+    # 모든 식당을 가져옵니다. (최신순 정렬)
+    restaurants = Restaurant.objects.all().order_by('-created_at')
+    return render(request, 'web/restaurant_select.html', {'restaurants': restaurants})
+
+
+# 2. 메뉴 등록 뷰 (선택한 식당에 메뉴 추가)
+def menu_create(request, restaurant_id):
+    restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
+
+    if request.method == 'POST':
+        form = MenuForm(request.POST)
+        if form.is_valid():
+            menu = form.save(commit=False)
+            menu.restaurant = restaurant  # URL에서 받은 식당 ID 연결
+            menu.save()
+
+            # ⭐ 핵심 로직: 어떤 버튼을 눌렀느냐에 따라 갈림길
+            if 'add_another' in request.POST:
+                # [저장하고 계속 추가] -> 같은 페이지로 리다이렉트 (새로고침 효과)
+                return redirect('menu_create', restaurant_id=restaurant.id)
+            else:
+                # [저장하고 종료] -> 식당 선택 리스트로 이동
+                return redirect('restaurant_select')
+    else:
+        form = MenuForm()
+
+    context = {
+        'form': form,
+        'restaurant': restaurant,
+        # 이미 등록된 메뉴들도 보여주면 편하겠죠?
+        'existing_menus': restaurant.menus.all()
+    }
+    return render(request, 'web/menu_create.html', context)
 
 def restaurant_list_api(request):
     restaurants = Restaurant.objects.all()
@@ -34,103 +71,6 @@ def restaurant_list_api(request):
     return JsonResponse(data, safe=False)
 
 
-def restaurant_list(request):
-    """
-    GET /restaurant : 식당 검색 페이지
-    - 키워드 검색 (이름, 주소)
-    - 카테고리 필터링 (식당/디저트/놀거리)
-    - 정렬 옵션 (가나다순/별점순/거리순/리뷰수순)
-    """
-    # 1. 기본 쿼리셋 (평점 평균, 리뷰 개수 포함)
-    restaurants = Restaurant.objects.annotate(
-        avg_rating=Avg('reviews__rating'),
-        review_count=Count('reviews')
-    )
-
-    # 2. 키워드 검색
-    query = request.GET.get('q', '')
-    if query:
-        restaurants = restaurants.filter(
-            Q(name__icontains=query) | Q(address__icontains=query)
-        )
-
-    # 3. 카테고리 필터
-    category = request.GET.get('category', '')
-    if category:
-        restaurants = restaurants.filter(category=category)
-
-    # 4. 정렬 옵션
-    sort = request.GET.get('sort', 'name')  # 기본값: 가나다순
-
-    if sort == 'name':
-        # 가나다순
-        restaurants = restaurants.order_by('name')
-    elif sort == 'rating':
-        # 별점순 (높은 순)
-        restaurants = restaurants.order_by('-avg_rating', '-review_count')
-    elif sort == 'review_count':
-        # 리뷰 개수순 (많은 순)
-        restaurants = restaurants.order_by('-review_count', '-avg_rating')
-    elif sort == 'distance':
-        # 거리순 - 사용자 위치 필요
-        user_lat = request.GET.get('lat')
-        user_lng = request.GET.get('lng')
-
-        if user_lat and user_lng:
-            try:
-                user_lat = float(user_lat)
-                user_lng = float(user_lng)
-
-                # 거리 계산을 위해 리스트로 변환 후 정렬
-                restaurants_list = list(restaurants)
-
-                def calculate_distance(restaurant):
-                    """두 지점 간 거리 계산 (Haversine formula)"""
-                    if not restaurant.lat or not restaurant.lng:
-                        return float('inf')
-
-                    lat1, lng1 = math.radians(user_lat), math.radians(user_lng)
-                    lat2, lng2 = math.radians(restaurant.lat), math.radians(restaurant.lng)
-
-                    dlat = lat2 - lat1
-                    dlng = lng2 - lng1
-
-                    a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlng / 2) ** 2
-                    c = 2 * math.asin(math.sqrt(a))
-
-                    # 지구 반지름 (km)
-                    radius = 6371
-                    return radius * c
-
-                restaurants_list.sort(key=calculate_distance)
-                restaurants = restaurants_list
-            except (ValueError, TypeError):
-                # 위치 정보가 잘못된 경우 기본 정렬
-                restaurants = restaurants.order_by('name')
-        else:
-            # 위치 정보가 없으면 기본 정렬
-            restaurants = restaurants.order_by('name')
-    else:
-        # 기본 정렬
-        restaurants = restaurants.order_by('name')
-
-    # 5. 페이지네이션
-    paginator = Paginator(restaurants, 12)
-    page = request.GET.get('page', 1)
-    page_obj = paginator.get_page(page)
-
-    # 6. 카테고리 목록
-    categories = Restaurant.CATEGORY_CHOICES
-
-    context = {
-        'restaurants': page_obj,
-        'query': query,
-        'selected_category': category,
-        'categories': categories,
-        'sort': sort,
-    }
-
-    return render(request, 'web/restaurant_list.html', context)
 
 
 def restaurant_detail(request, id):
@@ -203,7 +143,7 @@ def restaurant_create(request):
         form = RestaurantForm(request.POST)
         if form.is_valid():
             restaurant = form.save()
-            return redirect('restaurant_detail', id=restaurant.id)
+            return redirect('restaurant_select')
     else:
         # ⬇️ 'RestaurantForm' (폼 설계도)을 사용합니다.
         form = RestaurantForm() # ⬅️ GET 요청 시 빈 폼
