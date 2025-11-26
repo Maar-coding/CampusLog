@@ -3,7 +3,7 @@
   <div class="register_wrap">
     <!-- 상단 뒤로가기 영역 -->
     <header class="register_top">
-      <button type="button" class="back_button" onclick="goBack()">
+      <button type="button" class="back_button" onclick="changePanel('login')">
         <span class="back_icon">←</span>
         <span>뒤로 가기</span>
       </button>
@@ -12,7 +12,13 @@
     <div class="register_card">
       <h2 class="register_title">회원가입</h2>
 
-      <form class="register_form" method="post" action="{% url 'register' %}">
+      <!-- AJAX로 처리할 거라 onsubmit 추가 -->
+      <form
+        class="register_form"
+        method="post"
+        action="{% url 'register' %}"
+        onsubmit="return handleRegisterSubmit(event)"
+      >
         {% csrf_token %}
 
         <div class="form_group">
@@ -114,11 +120,22 @@
       </form>
     </div>
   </div>
-</div>
 
-<script>
-  // 로그인 페이지로 뒤로가기
-  function goBack() {
-    window.location.href = "{% url 'login' %}";
-  }
-</script>
+  <!-- ✅ 공용 팝업 (처음엔 숨김) -->
+  <div id="globalPopup" class="popup_overlay" style="display: none;">
+    <div class="popup_box">
+      <p class="popup_message" id="globalPopupMessage">
+        회원가입에 성공하였습니다!
+      </p>
+      <div class="popup_buttons">
+        <button
+          type="button"
+          class="btn btn_primary"
+          id="globalPopupConfirm"
+        >
+          확인
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

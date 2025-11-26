@@ -2,7 +2,7 @@
 <div class="panel_case login_panel">
   <div class="login_wrap">
     <header class="login_top">
-      <button type="button" class="back_button" onclick="goBack()">
+      <button type="button" class="back_button" onclick="changePanel('search_panel')">
         <span class="back_icon">←</span>
         <span>뒤로 가기</span>
       </button>
@@ -11,7 +11,12 @@
     <div class="login_card">
       <h2 class="login_title">로그인</h2>
 
-      <form class="login_form" method="post" action="{% url 'login' %}">
+      <form
+        class="login_form"
+        method="post"
+        action="{% url 'login' %}"
+        onsubmit="return handleLoginSubmit(event)"
+      >
         {% csrf_token %}
 
         <div class="form_group">
@@ -49,7 +54,7 @@
           <button
             type="button"
             class="btn btn_secondary"
-            onclick="goToRegister()"
+            onclick="changePanel('register')"
           >
             회원가입 하러가기
           </button>
@@ -57,14 +62,21 @@
       </form>
     </div>
   </div>
+
+  <div id="globalPopup" class="popup_overlay" style="display:none;">
+    <div class="popup_box">
+      <p class="popup_message" id="globalPopupMessage">
+        로그인에 성공하였습니다!
+      </p>
+      <div class="popup_buttons">
+        <button
+          type="button"
+          class="btn btn_primary"
+          id="globalPopupConfirm"
+        >
+          확인
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
-
-<script>
-  function goBack() {
-    window.location.href = "{% url 'index' %}";
-  }
-
-  function goToRegister() {
-    window.location.href = "{% url 'register' %}";
-  }
-</script>

@@ -121,12 +121,14 @@
     <div class="restaurant_section review_section">
       <div class="section_header">
         <h3 class="section_title">{{ restaurant.name }} 후기</h3>
-        <a
-          href="{% url 'restaurant_reviews' restaurant.id %}"
-          class="link_more"
-        >
-          {{ restaurant.name }} 후기 &gt;
-        </a>
+          <a
+                  class="link_more"
+                  onclick="changePanel('restaurant/{{ restaurant.id }}/reviews')"
+          >
+              {{ restaurant.name }} 후기 &gt;
+          </a>
+
+          </a>
       </div>
 
       <ul class="review_list">

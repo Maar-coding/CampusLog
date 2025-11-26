@@ -227,3 +227,34 @@
     transform: translateY(-1px);
     box-shadow: 0 10px 22px rgba(37, 99, 235, 0.45);
 }
+
+.popup_overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 2000;
+}
+
+.popup_box {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  min-width: 260px;
+  max-width: 320px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
+  text-align: center;
+}
+
+.popup_message {
+  margin-bottom: 16px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.popup_buttons {
+  display: flex;
+  justify-content: center;
+}
