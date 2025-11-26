@@ -309,6 +309,28 @@
             });
         }
 
+        function openReviewPanel(panelName = "restaurant_reviews", id = null) {
+            const panel = document.getElementById("panel");
+            currentPanel = panelName;
+
+            if (!id) {
+                console.error("openReviewPanel 호출 시 id 없음");
+                return;
+            }
+
+            const url = `/restaurant/${id}/reviews`;
+
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    panel.innerHTML = html;
+                    initPanelByName(panelName, id);
+                })
+                .catch(err => console.error(`${url} 로딩 실패`, err));
+        }
+
+
+
 
 
         // search_panel.html
