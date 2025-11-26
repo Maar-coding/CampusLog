@@ -301,7 +301,7 @@
                 clone.querySelector(".store_time").textContent = store.time;
 
                 // "식당 세부정보" 클릭 이벤트 연결
-                const datdBtn = clone.querySelector(".store_review");
+                const datdBtn = clone.querySelector(".store_name");
                 datdBtn.addEventListener("click", function () {
                     const id = card.dataset.id;       // ⭐ 카드에서 id 가져오기
                     openReviewPanel("restaurant_panel", id);
