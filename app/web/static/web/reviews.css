@@ -53,7 +53,7 @@
 
 /* 플로팅 후기 작성 버튼 */
 .floating_write_button {
-    position: fixed;
+    position: absolute;
     bottom: 24px;
     right: 24px;
     height: 40px;

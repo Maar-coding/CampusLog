@@ -308,4 +308,4 @@ def review_write_form(request, id):
         'form': form,
         'restaurant': restaurant
     }
-    return render(request, 'web/review_write.html', context)
+    return render(request, 'web/reviews_write_form.html', context)

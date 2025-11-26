@@ -381,13 +381,9 @@
         /* ---------------------------
         2) 리스트 렌더 함수
         ---------------------------- */
-        function renderStoreList(list) {
+                function renderStoreList(list) {
             const container = document.getElementById("store_list");
             const template = document.getElementById("store_card_template");
-            if (!container || !template) {
-                console.log("패널이 아직 안 열려서 리스트 렌더링을 대기합니다.");
-                return;
-            }
 
             container.innerHTML = "";
 
@@ -398,16 +394,44 @@
 
             list.forEach(store => {
                 const clone = template.content.cloneNode(true);
-                const idEl = clone.querySelector(".store_id");
 
+                // ⭐ store_card div에 id 주입
+                const card = clone.querySelector(".store_card");
+                card.dataset.id = store.id;
 
                 clone.querySelector(".store_img").src = store.image;
                 clone.querySelector(".store_name").textContent = store.name;
                 clone.querySelector(".store_time").textContent = store.time;
-                clone.querySelector(".store_id").textContent = store.id;
+
+                // ⭐ "후기 보기" 클릭 이벤트 연결
+                const reviewBtn = clone.querySelector(".store_review");
+                reviewBtn.addEventListener("click", function () {
+                    const id = card.dataset.id;       // ⭐ 카드에서 id 가져오기
+                    openReviewPanel("restaurant_reviews", id);
+                });
 
                 container.appendChild(clone);
             });
+        }
+
+        function openReviewPanel(panelName = "restaurant_reviews", id = null) {
+            const panel = document.getElementById("panel");
+            currentPanel = panelName;
+
+            if (!id) {
+                console.error("openReviewPanel 호출 시 id 없음");
+                return;
+            }
+
+            const url = `/restaurant/${id}/reviews`;
+
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    panel.innerHTML = html;
+                    initPanelByName(panelName, id);
+                })
+                .catch(err => console.error(`${url} 로딩 실패`, err));
         }
 
 

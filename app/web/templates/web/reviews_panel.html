@@ -1,9 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="../../static/web/reviews.css">
+    <title>{{ restaurant.name }} 후기</title>
+    <link rel="stylesheet" href="{% static 'web/reviews.css' %}">
 </head>
 <body>
 
@@ -12,21 +13,146 @@
     <div class="reviews_container">
         <div class="reviews_header">
             <div class="header_left">
-                <button class="back_button" onclick="changePanel('search')">
+                <button class="back_button" onclick="goBack()">
                     <span class="back_arrow">←</span>
                 </button>
                 <h1 class="reviews_title">후기</h1>
             </div>
         </div>
+
         <div class="reviews_list" id="reviewsList">
-            <div class="loading" id="loading">후기를 불러오는 중...</div>
+            {% if reviews %}
+                {% for review in reviews %}
+                    <div class="review_item" onclick="toggleReviewExpand({{ review.id }})">
+                        <div class="review_header">
+                            <div class="review_header_left">
+                                <h3 class="review_title">
+                                    {{ review.title|default:"(제목 없음)" }}
+                                </h3>
+                            </div>
+                            <div class="review_header_right">
+                                <span class="review_date">
+                                    {{ review.created_at|date:"Y.m.d H:i" }}
+                                </span>
+                                <button class="review_menu_button"
+                                        onclick="toggleReviewMenu({{ review.id }}, event)">
+                                    <span class="review_menu_dots">⋮</span>
+                                </button>
+                                <div class="review_menu_dropdown"
+                                     id="reviewMenu{{ review.id }}"
+                                     style="display: none;">
+                                    <button class="menu_item"
+                                            onclick="reportReview({{ review.id }})">
+                                        신고하기
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="review_content_area">
+                            <p class="review_content"
+                               id="reviewContent{{ review.id }}">
+                                {{ review.content|linebreaksbr }}
+                            </p>
+                            {# 이미지가 있다면 이런 식으로 사용 (필드 이름에 맞게 수정)
+                            {% if review.image_url %}
+                                <span class="image_indicator"
+                                      id="imageIndicator{{ review.id }}">🖼️</span>
+                            {% endif %}
+                            #}
+                        </div>
+
+                        <div class="review_images"
+                             id="reviewImages{{ review.id }}"
+                             style="display: none;">
+                            {# 예시용 – 실제 이미지 필드에 맞게 수정
+                            {% if review.image_url %}
+                                <img src="{{ review.image_url }}"
+                                     alt="후기 이미지"
+                                     class="review_image">
+                            {% endif %}
+                            #}
+                        </div>
+
+                        <div class="review_meta">
+                            <div class="review_meta_left">
+                                <span class="review_author">
+                                    {{ review.author_nickname }}
+                                </span>
+                                <div class="review_rating">
+                                    <div class="star_rating">
+                                        {% for _ in "12345" %}
+                                            {% if forloop.counter <= review.rating %}
+                                                <span class="star">★</span>
+                                            {% else %}
+                                                <span class="star empty">★</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <span class="rating_text">
+                                        {{ review.rating }}.0
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="review_stats">
+                                <button class="like_button"
+                                        onclick="toggleLike({{ review.id }}, event)"
+                                        id="likeBtn{{ review.id }}">
+                                    <span class="like_icon">♥</span>
+                                    <span class="like_count"
+                                          id="likeCount{{ review.id }}">
+                                        {{ review.like_count|default:"0" }}
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty_state">
+                    <div class="empty_state_text">후기가 없습니다</div>
+                </div>
+            {% endif %}
         </div>
-        <div class="pagination" id="pagination" style="display: none;">
-            <button class="page_button" onclick="changePage('prev')" id="prevBtn">‹</button>
-            <div id="pageNumbers"></div>
-            <button class="page_button" onclick="changePage('next')" id="nextBtn">›</button>
+
+        {# Django 기본 페이지네이션 사용 (뷰에서 page_obj, is_paginated 전달 가정) #}
+        {% if is_paginated %}
+        <div class="pagination" id="pagination">
+            {% if page_obj.has_previous %}
+                <button class="page_button"
+                        onclick="location.href='?page={{ page_obj.previous_page_number }}'">
+                    ‹
+                </button>
+            {% else %}
+                <button class="page_button" disabled>‹</button>
+            {% endif %}
+
+            <div id="pageNumbers">
+                {% for num in paginator.page_range %}
+                    {% if num == page_obj.number %}
+                        <button class="page_button active">{{ num }}</button>
+                    {% else %}
+                        <button class="page_button"
+                                onclick="location.href='?page={{ num }}'">
+                            {{ num }}
+                        </button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {% if page_obj.has_next %}
+                <button class="page_button"
+                        onclick="location.href='?page={{ page_obj.next_page_number }}'">
+                    ›
+                </button>
+            {% else %}
+                <button class="page_button" disabled>›</button>
+            {% endif %}
         </div>
-        <button class="floating_write_button" onclick="openWriteModal()">
+        {% endif %}
+
+        <button class="floating_write_button"
+                onclick="changePanel('restaurant/{{ restaurant.id }}/reviews/write')">
             <span class="write_icon">✏️</span>
             <span class="write_text">후기 쓰기</span>
         </button>
@@ -34,127 +160,15 @@
 </div>
 
 <script>
-let reviews = [];
-let currentPage = 1;
-let totalPages = 1;
-
-document.addEventListener('DOMContentLoaded', function() {
-    loadReviews();
-});
-
-async function loadReviews(page = 1) {
-    try {
-        showLoading(true);
-        const response = await mockApiCall(page);
-        reviews = response.reviews;
-        currentPage = response.currentPage;
-        totalPages = response.totalPages;
-        renderReviews();
-        renderPagination();
-    } catch (error) {
-        showError('후기를 불러오는데 실패했습니다.');
-    } finally {
-        showLoading(false);
-    }
-}
-
-function mockApiCall(page) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const mockReviews = [];
-            resolve({ reviews: mockReviews, currentPage: page, totalPages: 1 });
-        }, 500);
-    });
-}
-
-function renderReviews() {
-    const reviewsList = document.getElementById('reviewsList');
-    if (reviews.length === 0) {
-        reviewsList.innerHTML = '<div class="empty_state"><div class="empty_state_text">후기가 없습니다</div></div>';
-        return;
-    }
-    reviewsList.innerHTML = reviews.map(review => `
-        <div class="review_item" onclick="toggleReviewExpand(${review.id})">
-            <div class="review_header">
-                <div class="review_header_left">
-                    <h3 class="review_title">${review.title}</h3>
-                </div>
-                <div class="review_header_right">
-                    <span class="review_date">${review.createdAt}</span>
-                    <button class="review_menu_button" onclick="toggleReviewMenu(${review.id}, event)">
-                        <span class="review_menu_dots">⋮</span>
-                    </button>
-                    <div class="review_menu_dropdown" id="reviewMenu${review.id}" style="display: none;">
-                        <button class="menu_item" onclick="reportReview(${review.id})">신고하기</button>
-                    </div>
-                </div>
-            </div>
-            <div class="review_content_area">
-                <p class="review_content" id="reviewContent${review.id}">${review.content}</p>
-                ${review.hasImage ? '<span class="image_indicator" id="imageIndicator${review.id}">🖼️</span>' : ''}
-            </div>
-            <div class="review_images" id="reviewImages${review.id}" style="display: none;">
-                ${review.hasImage ? '<img src="https://via.placeholder.com/300x200" alt="후기 이미지" class="review_image">' : ''}
-            </div>
-            <div class="review_meta">
-                <div class="review_meta_left">
-                    <span class="review_author">${review.author}</span>
-                    <div class="review_rating">
-                        <div class="star_rating">${generateStars(review.rating)}</div>
-                        <span class="rating_text">${review.rating}.0</span>
-                    </div>
-                </div>
-                <div class="review_stats">
-                    <button class="like_button" onclick="toggleLike(${review.id}, event)" id="likeBtn${review.id}">
-                        <span class="like_icon">♥</span>
-                        <span class="like_count" id="likeCount${review.id}">${review.likes}</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
-
-function generateStars(rating) {
-    let stars = '';
-    for (let i = 1; i <= 5; i++) {
-        stars += i <= rating ? '<span class="star">★</span>' : '<span class="star empty">★</span>';
-    }
-    return stars;
-}
-
-function renderPagination() {
-    const pagination = document.getElementById('pagination');
-    if (totalPages <= 1) {
-        pagination.style.display = 'none';
-        return;
-    }
-    pagination.style.display = 'flex';
-}
-
-function changePage(page) {
-    if (page === 'prev') page = Math.max(1, currentPage - 1);
-    else if (page === 'next') page = Math.min(totalPages, currentPage + 1);
-    if (page !== currentPage) loadReviews(page);
-}
-
-function showLoading(show) {
-    document.getElementById('loading').style.display = show ? 'flex' : 'none';
-}
-
-function showError(message) {
-    document.getElementById('reviewsList').innerHTML = `<div class="empty_state"><div class="empty_state_text">오류: ${message}</div></div>`;
-}
-
-function openWriteModal() {
-    console.log('후기 작성');
-}
-
 function toggleReviewExpand(reviewId) {
-    const reviewItem = document.querySelector(`[onclick="toggleReviewExpand(${reviewId})"]`);
-    const reviewContent = document.getElementById(`reviewContent${reviewId}`);
-    const reviewImages = document.getElementById(`reviewImages${reviewId}`);
-    const imageIndicator = document.getElementById(`imageIndicator${reviewId}`);
+    const reviewItem = document.querySelector(
+        '.review_item[onclick="toggleReviewExpand(' + reviewId + ')"]'
+    );
+    const reviewContent = document.getElementById('reviewContent' + reviewId);
+    const reviewImages = document.getElementById('reviewImages' + reviewId);
+    const imageIndicator = document.getElementById('imageIndicator' + reviewId);
+
+    if (!reviewItem || !reviewContent) return;
 
     const isExpanded = reviewItem.classList.contains('expanded');
 
@@ -163,21 +177,23 @@ function toggleReviewExpand(reviewId) {
         reviewItem.classList.remove('expanded');
         reviewContent.style.webkitLineClamp = '2';
         reviewContent.style.overflow = 'hidden';
-        reviewImages.style.display = 'none';
+        if (reviewImages) reviewImages.style.display = 'none';
         if (imageIndicator) imageIndicator.style.display = 'inline';
     } else {
         // 확장
         reviewItem.classList.add('expanded');
         reviewContent.style.webkitLineClamp = 'unset';
         reviewContent.style.overflow = 'visible';
-        reviewImages.style.display = 'block';
+        if (reviewImages) reviewImages.style.display = 'block';
         if (imageIndicator) imageIndicator.style.display = 'none';
     }
 }
 
 function toggleReviewMenu(reviewId, event) {
     event.stopPropagation();
-    const menu = document.getElementById(`reviewMenu${reviewId}`);
+    const menu = document.getElementById('reviewMenu' + reviewId);
+    if (!menu) return;
+
     const isVisible = menu.style.display === 'block';
 
     // 모든 메뉴 닫기
@@ -193,24 +209,26 @@ function toggleReviewMenu(reviewId, event) {
 
 function toggleLike(reviewId, event) {
     event.stopPropagation();
-    const likeBtn = document.getElementById(`likeBtn${reviewId}`);
-    const likeCount = document.getElementById(`likeCount${reviewId}`);
+    const likeBtn = document.getElementById('likeBtn' + reviewId);
+    const likeCount = document.getElementById('likeCount' + reviewId);
+    if (!likeBtn || !likeCount) return;
+
     const isLiked = likeBtn.classList.contains('liked');
 
     if (isLiked) {
-        // 좋아요 취소
         likeBtn.classList.remove('liked');
-        likeCount.textContent = parseInt(likeCount.textContent) - 1;
+        likeCount.textContent = parseInt(likeCount.textContent || '0') - 1;
     } else {
-        // 좋아요 추가
         likeBtn.classList.add('liked');
-        likeCount.textContent = parseInt(likeCount.textContent) + 1;
+        likeCount.textContent = parseInt(likeCount.textContent || '0') + 1;
     }
+
+    // TODO: Django에 AJAX로 좋아요 반영하고 싶으면 여기서 fetch 호출
 }
 
 function reportReview(reviewId) {
     console.log('후기 신고:', reviewId);
-    // 신고 로직 구현
+    // TODO: 신고 기능 구현 시 Django URL로 이동 또는 fetch 호출
 }
 
 function goBack() {

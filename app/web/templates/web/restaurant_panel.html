@@ -122,7 +122,7 @@
       <div class="section_header">
         <h3 class="section_title">{{ restaurant.name }} 후기</h3>
         <a
-          href="{% url 'restaurant_reviews' restaurant.id %}"
+          onclick="changePanel('restaurant/{{ restaurant.id }}/reviews')"
           class="link_more"
         >
           {{ restaurant.name }} 후기 &gt;

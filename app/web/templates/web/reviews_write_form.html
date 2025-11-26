@@ -12,7 +12,7 @@
     <div class="upload_container">
         <div class="upload_header">
             <div class="header_left">
-                <button class="back_button" onclick="goBack()">
+                <button class="back_button" onclick="changePanel('restaurant/{{ restaurant.id }}/reviews')">
                     <span class="back_arrow">←</span>
                 </button>
                 <h1 class="upload_title">후기 작성</h1>
@@ -55,7 +55,7 @@
             </div>
 
             <div class="form_buttons">
-                <button type="button" class="btn btn_cancel" onclick="goBack()">취소</button>
+                <button type="button" class="btn btn_cancel" onclick="changePanel('restaurant/{{ restaurant.id }}/reviews')">취소</button>
                 <button type="submit" class="btn btn_submit">후기 등록</button>
             </div>
         </form>
