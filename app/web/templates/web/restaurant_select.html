@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>메뉴 등록 - 식당 선택</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f8f9fa; padding: 20px; }
+        .panel_case { max-width: 800px; margin: 0 auto; background-color: #fff; border-radius: 8px; padding: 24px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        h2 { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+
+        /* 리스트 스타일 */
+        .res_list { list-style: none; padding: 0; }
+        .res_item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
+        .res_item:last-child { border-bottom: none; }
+
+        .res_info strong { font-size: 1.1rem; display: block; margin-bottom: 4px; }
+        .res_info span { color: #666; font-size: 0.9rem; }
+
+        .btn_select {
+            background-color: #2f80ed; color: #fff; padding: 8px 16px;
+            text-decoration: none; border-radius: 4px; font-weight: bold;
+        }
+        .btn_select:hover { background-color: #1c68c9; }
+    </style>
+</head>
+<body>
+    <div class="panel_case">
+        <h2>어떤 식당의 메뉴를 등록하시겠습니까?</h2>
+
+        <ul class="res_list">
+            {% for r in restaurants %}
+            <li class="res_item">
+                <div class="res_info">
+                    <strong>{{ r.name }}</strong>
+                    <span>{{ r.category }} | 영업시간: {{ r.opening_hours }}</span>
+                </div>
+                <a href="{% url 'menu_create' r.id %}" class="btn_select">메뉴 등록하기</a>
+            </li>
+            {% empty %}
+            <li style="text-align: center; padding: 20px;">등록된 식당이 없습니다.</li>
+            {% endfor %}
+        </ul>
+
+        <div style="margin-top: 20px; text-align: right;">
+            <a href="{% url 'restaurant_create' %}" style="color: #666;">+ 새 식당 등록하러 가기</a>
+        </div>
+    </div>
+</body>
+</html>

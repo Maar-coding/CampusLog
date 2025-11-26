@@ -1,8 +1,39 @@
-from django import forms
-from web.models import Restaurant
+from web.models import Restaurant, Menu
 from django import forms
 from web.models import Review
 from web.models import Post
+
+
+# (기존 RestaurantForm이 있다면 그대로 두세요)
+
+class MenuForm(forms.ModelForm):
+    class Meta:
+        model = Menu
+        # restaurant 필드는 URL에서 식당 ID를 받아 처리하므로 폼에서는 제외합니다.
+        fields = ['name', 'price', 'image_url']
+
+        labels = {
+            'name': '메뉴 이름',
+            'price': '가격 (원)',
+            'image_url': '메뉴 이미지 URL',
+        }
+
+        # 🎨 CSS 클래스('form_input')를 여기서 미리 적용합니다.
+        # 템플릿에서 {{ form.name }}만 써도 스타일이 적용됩니다.
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form_input',
+                'placeholder': '예: 김치찌개'
+            }),
+            'price': forms.NumberInput(attrs={
+                'class': 'form_input',
+                'placeholder': '숫자만 입력해 주세요'
+            }),
+            'image_url': forms.URLInput(attrs={
+                'class': 'form_input',
+                'placeholder': 'https://...'
+            }),
+        }
 
 class RestaurantForm(forms.ModelForm):
     """
