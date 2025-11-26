@@ -38,7 +38,7 @@ def register(request):
 
         except Exception as e:
             # 기타 에러 처리
-            return render(request, 'register.html', {'error_message': f'가입 중 오류가 발생했습니다: {e}'})
+            return render(request, 'web/register.html', {'error_message': f'가입 중 오류가 발생했습니다: {e}'})
 
     # GET 요청일 경우 회원가입 페이지 보여주기
     return render(request, 'web/register.html')
