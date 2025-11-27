@@ -1,13 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="../../static/web/reviews.css">
-</head>
-<body>
+{% load static %}
 
-<!-- 왼쪽 패널 영역 (이 div 안에 코딩하기) -->
+<!-- 왼쪽 패널 영역 -->
 <div class="panel_case">
     <div class="upload_container">
         <div class="upload_header">
@@ -19,10 +12,12 @@
             </div>
         </div>
 
-        <form class="upload_form" id="reviewForm">
+        <form class="upload_form" id="reviewForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
             <div class="form_group">
                 <label class="form_label">제목</label>
-                <input type="text" class="form_input" id="reviewTitle" placeholder="후기 제목을 입력하세요" required>
+                <input type="text" class="form_input" name="title" id="reviewTitle" placeholder="후기 제목을 입력하세요" required>
             </div>
 
             <div class="form_group">
@@ -35,17 +30,18 @@
                     <span class="rating_star" data-rating="5">★</span>
                     <span class="rating_text" id="ratingText">별점을 선택하세요</span>
                 </div>
+                <input type="hidden" name="rating" id="ratingValue" required>
             </div>
 
             <div class="form_group">
                 <label class="form_label">후기 내용</label>
-                <textarea class="form_textarea" id="reviewContent" placeholder="후기 내용을 입력하세요" required></textarea>
+                <textarea class="form_textarea" name="content" id="reviewContent" placeholder="후기 내용을 입력하세요" required></textarea>
             </div>
 
             <div class="form_group">
                 <label class="form_label">사진 첨부</label>
                 <div class="file_upload_area">
-                    <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+                    <input type="file" name="images" id="imageInput" accept="image/*" multiple style="display: none;">
                     <button type="button" class="file_upload_button" onclick="document.getElementById('imageInput').click()">
                         <span class="upload_icon">📷</span>
                         <span class="upload_text">사진 선택</span>
@@ -75,10 +71,12 @@ document.addEventListener('DOMContentLoaded', function() {
 function initRatingStars() {
     const stars = document.querySelectorAll('.rating_star');
     const ratingText = document.getElementById('ratingText');
+    const ratingValue = document.getElementById('ratingValue');
 
     stars.forEach((star, index) => {
         star.addEventListener('click', function() {
             selectedRating = index + 1;
+            ratingValue.value = selectedRating;  // hidden input에 값 저장
             updateStarDisplay();
             ratingText.textContent = `${selectedRating}점`;
         });
@@ -147,7 +145,18 @@ function displayImagePreview(files) {
 }
 
 function removeImage(index) {
-    selectedImages.splice(index, 1);
+    const imageInput = document.getElementById('imageInput');
+    const dt = new DataTransfer();
+    const files = imageInput.files;
+
+    for (let i = 0; i < files.length; i++) {
+        if (i !== index) {
+            dt.items.add(files[i]);
+        }
+    }
+
+    imageInput.files = dt.files;
+    selectedImages = Array.from(dt.files);
     displayImagePreview(selectedImages);
 }
 
@@ -155,63 +164,28 @@ function initForm() {
     const form = document.getElementById('reviewForm');
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        submitReview();
+
+        const title = document.getElementById('reviewTitle').value;
+        const content = document.getElementById('reviewContent').value;
+        const rating = document.getElementById('ratingValue').value;
+
+        if (!title.trim()) {
+            alert('제목을 입력하세요.');
+            return;
+        }
+
+        if (!content.trim()) {
+            alert('후기 내용을 입력하세요.');
+            return;
+        }
+
+        if (!rating || rating === '0') {
+            alert('별점을 선택하세요.');
+            return;
+        }
+
+        // 폼 제출
+        form.submit();
     });
-}
-
-function submitReview() {
-    const title = document.getElementById('reviewTitle').value;
-    const content = document.getElementById('reviewContent').value;
-
-    if (!title.trim()) {
-        alert('제목을 입력하세요.');
-        return;
-    }
-
-    if (!content.trim()) {
-        alert('후기 내용을 입력하세요.');
-        return;
-    }
-
-    if (selectedRating === 0) {
-        alert('별점을 선택하세요.');
-        return;
-    }
-
-    // 후기 등록 로직
-    console.log('후기 등록:', {
-        title,
-        content,
-        rating: selectedRating,
-        images: selectedImages
-    });
-
-    showSuccessPage();
-}
-
-function showSuccessPage() {
-    document.querySelector('.panel_case').innerHTML = `
-        <div class="upload_success_container">
-            <div class="success_content">
-                <div class="success_icon">✓</div>
-                <h1 class="success_title">후기 등록 완료</h1>
-                <p class="success_message">후기가 성공적으로 등록되었습니다.<br>다른 사람들에게 도움이 되는 후기를 작성해 주셔서 감사합니다!</p>
-            </div>
-            <div class="success_buttons">
-                <button class="btn_primary single_button" onclick="goBack()">후기 목록으로</button>
-            </div>
-        </div>
-    `;
-}
-
-function writeAnother() {
-    location.reload();
-}
-
-function goBack() {
-    window.history.back();
 }
 </script>
-
-</body>
-</html>
