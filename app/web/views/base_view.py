@@ -11,7 +11,11 @@ from web.models import UserLocation
 # ==================================================================
 
 def index(request):
-    # (기존) GET / : 메인 페이지 (지도 화면)
+    if not request.session.get('visited_start'):
+        request.session['visited_start'] = True  # 이제부터는 방문한 적 있다고 표시하기
+        return render(request, 'web/start.html')  # 첫 접속: start 페이지
+
+    # 두 번째 방문부터는 메인 페이지
     return render(request, 'web/index.html')
 
 def test_page(request):
