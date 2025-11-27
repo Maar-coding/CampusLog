@@ -76,17 +76,32 @@ class RestaurantForm(forms.ModelForm):
 class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
-        # 사용자가 직접 입력해야 하는 필드만 나열 (작성자, 식당 정보는 뷰에서 자동으로 넣음)
-        fields = ['rating', 'content']
-
-        # (선택 사항) 위젯 설정으로 HTML 스타일링
+        fields = ['title', 'content', 'rating', 'image']  # title, image 포함
         widgets = {
-            'rating': forms.Select(attrs={'class': 'form_select'}),
-            'content': forms.Textarea(attrs={'class': 'form_input', 'rows': 5, 'placeholder': '솔직한 후기를 남겨주세요.'}),
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '리뷰 제목을 입력하세요'
+            }),
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': '리뷰 내용을 입력하세요',
+                'rows': 5
+            }),
+            'rating': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 1,
+                'max': 5
+            }),
+            'image': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
+            })
         }
         labels = {
-            'rating': '별점',
-            'content': '후기 내용',
+            'title': '제목',
+            'content': '내용',
+            'rating': '별점 (1~5)',
+            'image': '사진 (선택)'
         }
 
 #게시글 작성 폼 추가
