@@ -1,5 +1,6 @@
 /* 게시판 전체 컨테이너 */
 .board_container {
+    position: relative;
     padding: 24px;
     height: calc(100vh - 48px);
     display: flex;
@@ -119,7 +120,7 @@
 
 /* 플로팅 글쓰기 버튼 */
 .floating_write_button {
-    position: fixed;
+    position: absolute;
     bottom: 24px;
     right: 24px;
     height: 40px;
@@ -418,14 +419,6 @@
 
     .board_title {
         font-size: 20px;
-    }
-
-    .floating_write_button {
-        bottom: 16px;
-        right: 16px;
-        height: 36px;
-        padding: 0 10px;
-        gap: 4px;
     }
 
     .write_icon {

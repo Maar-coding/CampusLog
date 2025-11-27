@@ -13,7 +13,7 @@
         <!-- 뒤로가기 버튼과 게시판 헤더 -->
         <div class="board_header" id="boardHeader">
             <div class="header_left">
-                <button class="back_button" onclick="goBack()">
+                <button class="back_button" onclick="changePanel('board/list')">
                     <span class="back_arrow">←</span>
                 </button>
                 <h1 class="board_title">게시글 작성</h1>
@@ -61,7 +61,7 @@
 
             <!-- 버튼 영역 -->
             <div class="form_buttons">
-                <button type="button" class="btn btn_cancel" onclick="cancelPost()">취소</button>
+                <button type="button" class="btn btn_cancel" onclick="changePanel('board/list')">취소</button>
                 <button type="submit" class="btn btn_submit">업로드</button>
             </div>
         </form>
