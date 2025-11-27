@@ -1,7 +1,11 @@
 <!-- 왼쪽 패널 영역 (이 div 안에 코딩하기) -->
 <div class="panel_case">  <!-- (component.css) -->
     
-
+    <section class="search_panel_login_case">
+        <div class="search_panel_login_button" onclick="changePanel('login')">로그인</div>
+        <div class="search_panel_login_button" onclick="changePanel('register')">회원가입</div>
+        <p class="search_panel_login_text">{{ nickname }}님 환영합니다.</p>
+    </section>
     <section class="search_panel_header">
         <div class="community_button" onclick="changePanel('board')">게시판</div>
         <input type="text" class="search" id="search_input" placeholder="검색어">
