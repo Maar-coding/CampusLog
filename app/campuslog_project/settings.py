@@ -94,6 +94,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# 미디어 파일 설정 (사용자 업로드 파일) - 여기에 추가!
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 LOGIN_REDIRECT_URL = '/'  # 로그인 성공 시 이동할 URL (메인 페이지)
 LOGOUT_REDIRECT_URL = '/' # 로그아웃 성공 시 이동할 URL (메인 페이지)
 AUTH_USER_MODEL = 'web.CustomUser'

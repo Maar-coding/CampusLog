@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 <!-- 왼쪽 패널 영역 (이 div 안에 코딩하기) -->
+=======
+{% load static %}
+
+<!-- 왼쪽 패널 영역 -->
+>>>>>>> aeebc2a3190e441422a3682ecee92a46a15d8e65
 <div class="panel_case">
     <div class="upload_container">
         <div class="upload_header">
@@ -10,10 +16,12 @@
             </div>
         </div>
 
-        <form class="upload_form" id="reviewForm">
+        <form class="upload_form" id="reviewForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
             <div class="form_group">
                 <label class="form_label">제목</label>
-                <input type="text" class="form_input" id="reviewTitle" placeholder="후기 제목을 입력하세요" required>
+                <input type="text" class="form_input" name="title" id="reviewTitle" placeholder="후기 제목을 입력하세요" required>
             </div>
 
             <div class="form_group">
@@ -26,17 +34,18 @@
                     <span class="rating_star" data-rating="5">★</span>
                     <span class="rating_text" id="ratingText">별점을 선택하세요</span>
                 </div>
+                <input type="hidden" name="rating" id="ratingValue" required>
             </div>
 
             <div class="form_group">
                 <label class="form_label">후기 내용</label>
-                <textarea class="form_textarea" id="reviewContent" placeholder="후기 내용을 입력하세요" required></textarea>
+                <textarea class="form_textarea" name="content" id="reviewContent" placeholder="후기 내용을 입력하세요" required></textarea>
             </div>
 
             <div class="form_group">
                 <label class="form_label">사진 첨부</label>
                 <div class="file_upload_area">
-                    <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+                    <input type="file" name="images" id="imageInput" accept="image/*" multiple style="display: none;">
                     <button type="button" class="file_upload_button" onclick="document.getElementById('imageInput').click()">
                         <span class="upload_icon">📷</span>
                         <span class="upload_text">사진 선택</span>
@@ -52,3 +61,135 @@
         </form>
     </div>
 </div>
+
+<script>
+let selectedRating = 0;
+let selectedImages = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    initRatingStars();
+    initImageUpload();
+    initForm();
+});
+
+function initRatingStars() {
+    const stars = document.querySelectorAll('.rating_star');
+    const ratingText = document.getElementById('ratingText');
+    const ratingValue = document.getElementById('ratingValue');
+
+    stars.forEach((star, index) => {
+        star.addEventListener('click', function() {
+            selectedRating = index + 1;
+            ratingValue.value = selectedRating;  // hidden input에 값 저장
+            updateStarDisplay();
+            ratingText.textContent = `${selectedRating}점`;
+        });
+
+        star.addEventListener('mouseenter', function() {
+            highlightStars(index + 1);
+        });
+    });
+
+    document.querySelector('.rating_input').addEventListener('mouseleave', function() {
+        updateStarDisplay();
+    });
+}
+
+function highlightStars(rating) {
+    const stars = document.querySelectorAll('.rating_star');
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.add('hover');
+        } else {
+            star.classList.remove('hover');
+        }
+    });
+}
+
+function updateStarDisplay() {
+    const stars = document.querySelectorAll('.rating_star');
+    stars.forEach((star, index) => {
+        star.classList.remove('hover');
+        if (index < selectedRating) {
+            star.classList.add('selected');
+        } else {
+            star.classList.remove('selected');
+        }
+    });
+}
+
+function initImageUpload() {
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+
+    imageInput.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        selectedImages = files;
+        displayImagePreview(files);
+    });
+}
+
+function displayImagePreview(files) {
+    const imagePreview = document.getElementById('imagePreview');
+    imagePreview.innerHTML = '';
+
+    files.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview_item';
+            previewItem.innerHTML = `
+                <img src="${e.target.result}" alt="미리보기" class="preview_image">
+                <button type="button" class="remove_image" onclick="removeImage(${index})">×</button>
+            `;
+            imagePreview.appendChild(previewItem);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeImage(index) {
+    const imageInput = document.getElementById('imageInput');
+    const dt = new DataTransfer();
+    const files = imageInput.files;
+
+    for (let i = 0; i < files.length; i++) {
+        if (i !== index) {
+            dt.items.add(files[i]);
+        }
+    }
+
+    imageInput.files = dt.files;
+    selectedImages = Array.from(dt.files);
+    displayImagePreview(selectedImages);
+}
+
+function initForm() {
+    const form = document.getElementById('reviewForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const title = document.getElementById('reviewTitle').value;
+        const content = document.getElementById('reviewContent').value;
+        const rating = document.getElementById('ratingValue').value;
+
+        if (!title.trim()) {
+            alert('제목을 입력하세요.');
+            return;
+        }
+
+        if (!content.trim()) {
+            alert('후기 내용을 입력하세요.');
+            return;
+        }
+
+        if (!rating || rating === '0') {
+            alert('별점을 선택하세요.');
+            return;
+        }
+
+        // 폼 제출
+        form.submit();
+    });
+}
+</script>
