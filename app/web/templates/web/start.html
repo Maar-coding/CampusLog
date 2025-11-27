@@ -23,36 +23,13 @@
         />
         <p class="start-subtitle">매지리 식당 정보를 한눈에!</p>
 
-        <div class="start-btn-row">
-          <button type="button" class="start-btn" onclick="goLogin()">
-            로그인
-          </button>
-          <button type="button" class="start-btn" onclick="goRegister()">
-            회원가입
-          </button>
-          <button type="button" class="start-btn" onclick="goGuest()">
-            게스트
-          </button>
-        </div>
+          <div class="start-btn-row">
+              <a href="{% url 'index' %}" class="start-btn">
+                  시작하기
+              </a>
+          </div>
       </div>
     </div>
   </div>
-
-  <script>
-    // 로그인 버튼 → 로그인 패널 페이지로 이동
-    function goLogin() {
-      window.location.href = "{% url 'login' %}";
-    }
-
-    // 회원가입 버튼 → 회원가입 패널 페이지로 이동
-    function goRegister() {
-      window.location.href = "{% url 'register' %}";
-    }
-
-    // 게스트 버튼 → 지도 메인(index)로 이동
-    function goGuest() {
-      window.location.href = "{% url 'index' %}";
-    }
-  </script>
 </body>
 </html>
