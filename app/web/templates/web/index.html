@@ -242,7 +242,7 @@
 
             currentPanel = panelName;      // 마지막 패널 기억
 
-            let url = `/${panelName}`;
+            let url = `/${panelName}/${id}`;
 
             // 2. ⭐ 식당 패널이고 ID가 있으면, URL 뒤에 ID를 붙임
             // 예: /restaurant_panel/3
@@ -590,7 +590,7 @@
         /* ---------------------------
         2) 리스트 렌더 함수
         ---------------------------- */
-                function renderStoreList(list) {
+        function renderStoreList(list) {
             const container = document.getElementById("store_list");
             const template = document.getElementById("store_card_template");
 
