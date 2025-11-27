@@ -242,7 +242,7 @@
 
             currentPanel = panelName;      // 마지막 패널 기억
 
-            let url = `/${panelName}/${id}`;
+            let url = `/${panelName}`;
 
             // 2. ⭐ 식당 패널이고 ID가 있으면, URL 뒤에 ID를 붙임
             // 예: /restaurant_panel/3
@@ -349,6 +349,8 @@
 
 
         // search_panel.html
+
+        
 
         // 매장 필터링 함수
         function onFilterClick(tag, clickedEl) {
@@ -708,6 +710,22 @@
         // 페이지 로드되면 패널 열기
         document.addEventListener("DOMContentLoaded", function () {
             panelButton();
+        });
+
+        // sear
+        // ㅇㅇ님 환영합니다. 텍스트 삽입
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const nicknameEl = document.getElementById("nicknameArea");
+            console.log("nicknameArea 요소:", nicknameEl);
+
+            if (!nicknameEl) {
+                console.error("id='nicknameArea' 요소를 찾지 못했습니다.");
+                return;
+            }
+
+            nicknameEl.innerText = `${user.nickname}님 환영합니다.`;
+
         });
     </script>
 </body>
