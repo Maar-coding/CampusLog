@@ -205,43 +205,27 @@ def restaurant_reviews(request, id):
     return render(request, 'web/reviews_panel.html', context)
 
 
-
-
-
 @login_required
 def review_write_form(request, id):
     """
-    GET/POST /restaurant/{id}/review/write : 리뷰 작성
+    GET/POST /restaurant/{id}/reviews/write : 리뷰 작성
     - 로그인한 사용자만 접근 가능
     """
-    # 1. 어떤 식당에 대한 리뷰인지 확인
     restaurant = get_object_or_404(Restaurant, pk=id)
 
-    # [선택 사항] 중복 리뷰 방지 (한 식당에 한 명당 1개만 가능하게 하려면)
-    if Review.objects.filter(restaurant=restaurant, author=request.user).exists():
-        messages.error(request, "이미 이 식당에 대한 리뷰를 작성하셨습니다.")
-        return redirect('restaurant_detail', id=id)
-
     if request.method == 'POST':
-        # 3. 데이터 저장 요청 (POST)
-        form = ReviewForm(request.POST)
+        form = ReviewForm(request.POST, request.FILES)
 
         if form.is_valid():
-            # commit=False: DB에 바로 저장하지 않고 메모리에만 객체 생성
             review = form.save(commit=False)
-
-            # 누락된 정보 채우기 (작성자, 식당)
             review.author = request.user
             review.restaurant = restaurant
-
-            # 최종 저장
             review.save()
 
-            # 작성 후 상세 페이지로 이동
-            return redirect('restaurant_detail', id=id)
-
+            # 성공 시 리뷰 목록으로 바로 리다이렉트
+            messages.success(request, "리뷰가 성공적으로 작성되었습니다!")
+            return redirect('restaurant_reviews', id=id)
     else:
-        # 2. 폼 보여주기 요청 (GET)
         form = ReviewForm()
 
     context = {

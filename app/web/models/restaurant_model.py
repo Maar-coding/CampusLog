@@ -88,9 +88,10 @@ class Review(models.Model):
     """
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='reviews')
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=200, default='')  # 기본값: 빈 문자열
-    content = models.TextField(default='')  # 기본값: 빈 문자열
-    rating = models.PositiveSmallIntegerField(default=3)  # 기본값: 3점
+    title = models.CharField(max_length=200, default='')
+    content = models.TextField(default='')
+    rating = models.PositiveSmallIntegerField(default=3)
+    image = models.ImageField(upload_to='reviews/%Y/%m/%d/', null=True, blank=True)  # ⭐ 추가
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

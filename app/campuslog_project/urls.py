@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from web import views as web_views  # web 앱의 signup 뷰를 가져오기 위해
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     # 1. 관리자 페이지
@@ -22,3 +24,7 @@ urlpatterns = [
     # 이 모든 요청을 web/urls.py 파일로 넘깁니다.
     path('', include('web.urls')),
 ]
+
+# 개발 환경에서 미디어 파일 서빙
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
