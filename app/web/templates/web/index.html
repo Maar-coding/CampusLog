@@ -432,6 +432,7 @@
         }
 
         // 회원가입 폼 AJAX 제출 + 성공 팝업 → 로그인 패널 이동
+        // 회원가입 폼 AJAX 제출 + 성공 팝업 → 로그인 패널 이동
         function handleRegisterSubmit(event) {
             event.preventDefault();
 
@@ -442,45 +443,58 @@
                 method: form.method || "POST",
                 body: formData,
                 headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                }
+                    "X-Requested-With": "XMLHttpRequest",
+                },
             })
-                    .then(res =>
-                            res.text().then(html => ({res, html}))
-                    )
-                    .then(({res, html}) => {
+                    .then(async (res) => {
+                        const html = await res.text();       // 응답 본문 텍스트로 읽기
                         const panel = document.getElementById("panel");
 
-                        // 1️⃣ 서버가 500 같은 에러를 낸 경우 → 성공으로 취급하지 않기
+                        // 1️⃣ 중복 아이디 케이스 탐지 (응답 내용으로 판단)
+                        //   → Network 탭 Response 안에 실제 문구에 맞춰서 수정해도 됨
+                        if (
+                                html.includes("중복된 아이디") ||
+                                html.includes("이미 존재하는 아이디")
+                        ) {
+                            openPopup("이미 사용 중인 아이디입니다.\n다른 아이디를 사용해 주세요.");
+                            return;
+                        }
+
+                        // 2️⃣ 템플릿에서 form.errors / error_message 로 렌더된 경우
+                        if (html.includes('id="registerError"')) {
+                            panel.innerHTML = html;   // 에러 포함된 register 패널 다시 렌더링
+                            return;
+                        }
+
+                        // 3️⃣ 여기까지 왔는데 상태 코드가 200이 아니면 → 진짜 서버 오류 취급
                         if (!res.ok) {
                             console.error("회원가입 서버 오류:", res.status);
-                            openPopup("회원가입 중 서버 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.");
+                            openPopup(
+                                    "회원가입 중 서버 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요."
+                            );
                             return;
                         }
 
-                        // 2️⃣ 에러 메시지가 있으면 (form.errors / error_message) → 실패로 간주
-                        if (html.includes('id="registerError"')) {
-                            panel.innerHTML = html;  // 에러 포함된 register.html 다시 렌더링
-                            return;
-                        }
-
-                        // 3️⃣ 여기까지 왔으면 "회원가입 성공"으로 간주
+                        // 4️⃣ 모든 에러 조건에 안 걸렸으면 → 회원가입 성공으로 간주
                         openPopup("회원가입에 성공하였습니다!", () => {
                             // 확인 누르면 로그인 패널로 이동
                             changePanel("login");
                         });
                     })
-                    .catch(err => {
+                    .catch((err) => {
                         console.error("회원가입 요청 실패", err);
-                        openPopup("네트워크 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.");
+                        openPopup(
+                                "네트워크 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요."
+                        );
                     });
 
             return false;
         }
 
+
         // 로그인 폼 AJAX 제출 + 실패 시 패널 안에서만 갱신 + 성공 시 팝업 후 search 패널로 이동
         function handleLoginSubmit(event) {
-            event.preventDefault();  // 기본 동작(페이지 이동) 막기
+            event.preventDefault();  // 기본 폼 전송 막기
 
             const form = event.target;
             const formData = new FormData(form);
@@ -490,46 +504,50 @@
                 body: formData,
                 headers: {
                     "X-Requested-With": "XMLHttpRequest"
-                }
+                },
+                redirect: "follow"   // 기본값이지만 명시
             })
-                    .then(res => res.text().then(html => ({res, html})))
-                    .then(({res, html}) => {
+                    .then(async (res) => {
+                        const html = await res.text();      // 응답 전체를 문자열로
                         const panel = document.getElementById("panel");
 
-                        // 1️⃣ 서버 에러 (500 등) 이면 성공 취급 X
-                        if (!res.ok) {
+                        // 🔹 1) 진짜 서버 오류 (500 등)
+                        if (!res.ok && !res.redirected) {
                             console.error("로그인 서버 오류:", res.status);
                             openPopup("로그인 중 서버 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.");
                             return;
                         }
 
-                        // 2️⃣ 실패 여부 판단: 로그인 템플릿에는 id="loginError" 가 들어옴
-                        if (html.includes('id="loginError"')) {
+                        // 🔹 2) 로그인 실패 케이스
+                        //    - Django 기본 LoginView는 실패 시 redirect 없이 로그인 템플릿을 다시 렌더링
+                        //    - 그 템플릿 안에 우리가 만든 id="loginError"가 들어 있음
+                        if (!res.redirected && html.includes('id="loginError"')) {
                             const parser = new DOMParser();
                             const doc = parser.parseFromString(html, "text/html");
                             const loginPanel = doc.querySelector(".panel_case.login_panel");
 
                             if (loginPanel) {
+                                // 패널 영역만 다시 교체
                                 panel.innerHTML = loginPanel.outerHTML;
                             } else {
-                                // 혹시 못 찾으면 그대로 확인용으로 붙이기
+                                // 혹시 구조가 달라졌으면 그대로 넣어서라도 에러 메시지 보이게
                                 panel.innerHTML = html;
                             }
-                            return;  // 실패 처리 끝
+                            return;
                         }
 
-                        // 3️⃣ 여기까지 왔으면 로그인 성공으로 간주
-                        //    패널은 그대로 두고, 팝업 띄웠다가 확인 누르면 search 패널로 내용만 교체
+                        // 🔹 3) 여기까지 왔으면 = 대부분 "로그인 성공" (리다이렉트가 있었던 경우)
                         openPopup("로그인에 성공하였습니다!", () => {
-                            changePanel("search");   // 패널은 열린 상태 그대로, 안의 컨텐츠만 search로
+                            // 팝업의 확인 버튼을 누르면, 패널 내용만 search 패널로 교체
+                            changePanel("search");
                         });
                     })
-                    .catch(err => {
+                    .catch((err) => {
                         console.error("로그인 요청 실패", err);
                         openPopup("네트워크 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.");
                     });
 
-            return false;
+            return false;   // onsubmit="return handleLoginSubmit(event)" 에서 기본 제출 막기
         }
 
 
