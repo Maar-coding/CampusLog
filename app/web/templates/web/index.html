@@ -712,20 +712,22 @@
             panelButton();
         });
 
-        // sear
+        // search_panel.html
         // ㅇㅇ님 환영합니다. 텍스트 삽입
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", async function () {
+            try {
+                const res = await fetch("/api/user/");
+                const data = await res.json();
 
-            const nicknameEl = document.getElementById("nicknameArea");
-            console.log("nicknameArea 요소:", nicknameEl);
+                const nicknameEl = document.getElementById("nicknameArea");
 
-            if (!nicknameEl) {
-                console.error("id='nicknameArea' 요소를 찾지 못했습니다.");
-                return;
+                if (nicknameEl) {
+                    nicknameEl.innerText = `${data.nickname}님 환영합니다.`;
+                }
             }
-
-            nicknameEl.innerText = `${user.nickname}님 환영합니다.`;
-
+            catch(err) {
+                console.error("닉네임 가져오기 실패:", err);
+            }
         });
     </script>
 </body>
