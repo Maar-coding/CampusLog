@@ -3,12 +3,13 @@
     
     <section class="search_panel_login_case">
         <div class="search_panel_login_button" onclick="changePanel('login')">로그인</div>
+        <div class="search_panel_login_button" onclick="logout()">로그아웃</div>
         <p class="search_panel_login_text" id="nicknameArea"></p> <!-- ㅇㅇ님 환영합니다. -->
     </section>
     <section class="search_panel_header">
-        <div class="community_button" onclick="changePanel('board')">게시판</div>
+        <div class="community_button" onclick="changePanel('board_panel')">게시판</div>
         <input type="text" class="search" id="search_input" placeholder="검색어">
-        <img src="../../static/img/search.svg" class="search_button">
+        <img src="../../static/img/search.svg" class="search_panel_search_button">
     </section>
     <section class="search_panel_filter_case">
         <img src="../../static/img/restaurant.png" class="search_panel_filter" onclick="onFilterClick('restaurant', this)">
@@ -42,7 +43,4 @@
             </div>
         </div>
     </template>
-
-    
-    
 </div>  

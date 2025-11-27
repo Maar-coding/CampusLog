@@ -69,7 +69,7 @@
     font-weight: 400;
 }
 
-.search_button {
+.search_panel_search_button {
     width: 32px;
     height: 32px;
     position: absolute;
@@ -189,6 +189,7 @@
     font-weight: 400;
     line-height: 24px;
     margin: 0 0 8px 0;
+    cursor: pointer;
 }
 
 .store_time {

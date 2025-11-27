@@ -1,0 +1,296 @@
+// 게시글 데이터 및 상태 관리
+let posts = [];
+let currentPage = 1;
+let totalPages = 1;
+let searchKeyword = '';
+
+// 페이지 로드 시 게시글 목록 불러오기
+document.addEventListener('DOMContentLoaded', function() {
+    loadPosts();
+});
+
+// 게시글 목록 불러오기
+async function loadPosts(page = 1, keyword = '') {
+    try {
+        showLoading(true);
+
+        // API 호출 (예시 데이터로 대체)
+        const response = await mockApiCall(page, keyword);
+
+        posts = response.posts;
+        currentPage = response.currentPage;
+        totalPages = response.totalPages;
+
+        renderPosts();
+        renderPagination();
+
+    } catch (error) {
+        console.error('게시글 로드 오류:', error);
+        showError('게시글을 불러오는데 실패했습니다.');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Mock API 호출 (실제 API로 교체 필요)
+function mockApiCall(page, keyword) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const mockPosts = [
+                {
+                    id: 1,
+                    title: '캐퍼스 맛집 추천해주세요!',
+                    content: '학교 근처에 맛있는 식당이 있나요? 추천 부탁드립니다. 특히 한식, 중식, 일식 등 다양한 종류의 음식을 즐길 수 있는 곳이면 좋겠어요.',
+                    author: '맛집탐험가',
+                    createdAt: '2024-01-15 14:30',
+                    views: 145,
+                    likes: 23,
+                    hasImage: true
+                },
+                {
+                    id: 2,
+                    title: '도서관 24시간 이용 가능한가요?',
+                    content: '시험기간에 밤늦게 공부하고 싶은데 도서관 24시간 이용이 가능한지 궁금합니다. 혹시 아시는 분 있으면 답변 부탁드려요.',
+                    author: '공부벌레',
+                    createdAt: '2024-01-15 13:45',
+                    views: 89,
+                    likes: 15
+                },
+                {
+                    id: 3,
+                    title: '자료구조 스터디 그룹 모집합니다!',
+                    content: '자료구조 과목을 함께 공부할 스터디 그룹을 모집합니다. 주 2회 모임 예정이고, 온라인/오프라인 병행 가능합니다. 관심 있으신 분들 연락주세요!',
+                    author: '코딩러버',
+                    createdAt: '2024-01-15 12:20',
+                    views: 234,
+                    likes: 42,
+                    hasImage: true
+                },
+                {
+                    id: 4,
+                    title: '학생회 선거 후보 공약 발표',
+                    content: '안녕하세요, 학생회장 후보 김사람입니다. 저의 공약사항을 말씀드리겠습니다. 1. 학식 개선 2. 도서관 시설 확충 3. 축제 확대 등입니다.',
+                    author: '김사람',
+                    createdAt: '2024-01-15 11:30',
+                    views: 312,
+                    likes: 67
+                },
+                {
+                    id: 5,
+                    title: '기말고사 시간표 공유해요',
+                    content: '기말고사 시간표가 나왔네요! 모두 시험 준비 열심히 하시고 좋은 결과 있기를 바랍니다. 특히 전공과목들은 미리미리 준비하세요!',
+                    author: '선배님',
+                    createdAt: '2024-01-15 10:15',
+                    views: 456,
+                    likes: 89,
+                    hasImage: true
+                },
+                {
+                    id: 6,
+                    title: '캐퍼스 내 카페 추천',
+                    content: '공부하다가 커피 마시고 싶을 때 갈 만한 곳이 있나요? 캐퍼스 내에 카페가 있는지 궁금합니다.',
+                    author: '커피중독자',
+                    createdAt: '2024-01-15 09:45',
+                    views: 78,
+                    likes: 12
+                },
+                {
+                    id: 7,
+                    title: '중고 책 거래 하실 분?',
+                    content: '전공서적 중고로 판매합니다. 상태 좋고 가격도 저렴합니다. 필요하신 분 연락주세요. 직거래 선호합니다.',
+                    author: '책판매자',
+                    createdAt: '2024-01-15 08:30',
+                    views: 156,
+                    likes: 8
+                },
+                {
+                    id: 8,
+                    title: '대학원 진학 상담',
+                    content: '대학원 진학을 고려하고 있는데, 경험이 있으신 선배님들의 조언을 구하고 싶습니다. 특히 연구실 선택과 지도교수 선정에 대해 알고 싶어요.',
+                    author: '진학고민자',
+                    createdAt: '2024-01-14 16:20',
+                    views: 203,
+                    likes: 34
+                }
+            ];
+
+            const filteredPosts = keyword ?
+                mockPosts.filter(post =>
+                    post.title.includes(keyword) || post.content.includes(keyword)
+                ) : mockPosts;
+
+            resolve({
+                posts: filteredPosts,
+                currentPage: page,
+                totalPages: Math.ceil(filteredPosts.length / 10)
+            });
+        }, 500);
+    });
+}
+
+// 게시글 목록 렌더링
+function renderPosts() {
+    const postList = document.getElementById('postList');
+
+    if (posts.length === 0) {
+        postList.innerHTML = `
+            <div class="empty_state">
+                <div class="empty_state_text">게시글이 없습니다</div>
+                <div class="empty_state_subtext">첫 번째 게시글을 작성해보세요!</div>
+            </div>
+        `;
+        return;
+    }
+
+    postList.innerHTML = posts.map(post => `
+        <div class="post_item">
+            <div class="post_header">
+                <h3 class="post_title" onclick="openPost(${post.id})">${post.title}</h3>
+                <div class="post_header_right">
+                    <span class="post_date">${post.createdAt}</span>
+                    <button class="post_menu_button" onclick="togglePostMenu(${post.id}, event)">
+                        <span class="post_menu_dots">⋮</span>
+                    </button>
+                    <div class="post_menu_dropdown" id="postMenu${post.id}" style="display: none;">
+                        <button class="menu_item" onclick="reportPost(${post.id})">신고하기</button>
+                    </div>
+                </div>
+            </div>
+            <div class="post_content_area" onclick="openPost(${post.id})">
+                <p class="post_content">${post.content}</p>
+                ${post.hasImage ? '<span class="image_indicator">🖼️</span>' : ''}
+            </div>
+            <div class="post_meta" onclick="openPost(${post.id})">
+                <span class="post_author">${post.author}</span>
+                <div class="post_stats">
+                    <span>조회 ${post.views}</span>
+                    <span>좋아요 ${post.likes}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 페이지네이션 렌더링
+function renderPagination() {
+    const pagination = document.getElementById('pagination');
+    const pageNumbers = document.getElementById('pageNumbers');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    if (totalPages <= 1) {
+        pagination.style.display = 'none';
+        return;
+    }
+
+    pagination.style.display = 'flex';
+
+    // 이전/다음 버튼 상태
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+
+    // 페이지 번호 버튼
+    let pageNumbersHtml = '';
+    for (let i = 1; i <= totalPages; i++) {
+        pageNumbersHtml += `
+            <button class="page_button ${i === currentPage ? 'active' : ''}"
+                    onclick="changePage(${i})">${i}</button>
+        `;
+    }
+    pageNumbers.innerHTML = pageNumbersHtml;
+}
+
+// 페이지 변경
+function changePage(page) {
+    if (page === 'prev') {
+        page = Math.max(1, currentPage - 1);
+    } else if (page === 'next') {
+        page = Math.min(totalPages, currentPage + 1);
+    }
+
+    if (page !== currentPage) {
+        loadPosts(page, searchKeyword);
+    }
+}
+
+// 검색 기능
+function searchPosts() {
+    const searchInput = document.getElementById('searchInput');
+    searchKeyword = searchInput.value.trim();
+    currentPage = 1;
+    loadPosts(1, searchKeyword);
+}
+
+// Enter 키로 검색
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchPosts();
+    }
+});
+
+// 게시글 상세 보기
+function openPost(postId) {
+    console.log('게시글 상세 보기:', postId);
+    alert(`게시글 ${postId}번 상세 보기 기능을 구현해주세요.`);
+}
+
+// 게시글 메뉴 토글
+function togglePostMenu(postId, event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById(`postMenu${postId}`);
+    // 다른 게시글 메뉴 닫기
+    document.querySelectorAll('.post_menu_dropdown').forEach(menu => {
+        if (menu.id !== `postMenu${postId}`) {
+            menu.style.display = 'none';
+        }
+    });
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+
+// 메뉴 외부 클릭 시 닫기
+document.addEventListener('click', function(e) {
+    const postMenuButtons = document.querySelectorAll('.post_menu_button');
+    const postMenus = document.querySelectorAll('.post_menu_dropdown');
+
+    let clickedPostMenu = false;
+    postMenuButtons.forEach(button => {
+        if (button.contains(e.target)) {
+            clickedPostMenu = true;
+        }
+    });
+
+    postMenus.forEach(menu => {
+        if (menu.contains(e.target)) {
+            clickedPostMenu = true;
+        }
+    });
+
+    if (!clickedPostMenu) {
+        postMenus.forEach(menu => {
+            menu.style.display = 'none';
+        });
+    }
+});
+
+// 로딩 상태 표시
+function showLoading(show) {
+    const loading = document.getElementById('loading');
+
+    if (show) {
+        loading.style.display = 'flex';
+    } else {
+        loading.style.display = 'none';
+    }
+}
+
+// 오류 메시지 표시
+function showError(message) {
+    const postList = document.getElementById('postList');
+    postList.innerHTML = `
+        <div class="empty_state">
+            <div class="empty_state_text">오류가 발생했습니다</div>
+            <div class="empty_state_subtext">${message}</div>
+        </div>
+    `;
+}
