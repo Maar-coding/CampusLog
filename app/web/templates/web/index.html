@@ -10,7 +10,8 @@
     <link rel="stylesheet" href="../../static/web/login_panel.css"/>
     <link rel="stylesheet" href="../../static/web/register_panel.css">
     <link rel="stylesheet" href="../../static/web/restaurant.css">
-    <link rel="stylesheet" href="../../static/web/reviews.css">
+    <link rel="stylesheet" href="../../static/web/reviews_panel.css">
+    <link rel="stylesheet" href="../../static/web/reviews_write_panel.css">
     <link rel="stylesheet" href="../../static/web/board.css">
     <!-- 카카오 Maps API 불러오기 (이동하 개인 키 값) -->
      <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=8d908fe0cb6e1d79f77f01659a40a83e&libraries=services"></script>
@@ -31,6 +32,19 @@
 
     <!-- 기본 패널 (component.css) -->
     <aside id="panel" style="display: none;"></aside>
+
+    <div id="globalPopup" class="popup_overlay" style="display:none;">
+        <div class="popup_box">
+            <p class="popup_message" id="globalPopupMessage">
+                알림 내용
+            </p>
+            <div class="popup_buttons">
+                <button type="button" class="btn btn_primary" id="globalPopupConfirm">
+                    확인
+                </button>
+            </div>
+        </div>
+    </div>
 
 
     <script>
@@ -72,12 +86,12 @@
                 navigator.geolocation.getCurrentPosition(function (position) {
                     initMap(position.coords.latitude, position.coords.longitude);
                 }, function (error) {
-                    alert('위치 접근 실패 (기본 위치로 설정)');
-                    initMap(37.5665, 126.9780);
+                    alert('위치 접근 실패 (매화소 공원으로 위치를 설정합니다.)');
+                    initMap(37.2787235583201, 127.910148105052);
                 });
             } else {
                 alert('이 브라우저는 위치 정보를 지원하지 않습니다.');
-                initMap(37.5665, 126.9780);
+                initMap(127.910148105052, 127.910148105052);
             }
 
             // 페이지 로드되면 패널 열기 (함수 호출 위치 이동)
@@ -116,6 +130,7 @@
                 map: map
             });
 
+            overlay.tags = tags;
             overlay.tags = tags;
             overlay.el = el;
 
@@ -194,7 +209,13 @@
             } else {
                 btn.classList.add('open');
                 img.style.transform = 'scaleX(-1)';
-                openPanel(currentPanel);
+                let id = null;
+                if (currentPanel === "restaurant" || currentPanel === "restaurant_reviews") {
+                    id = localStorage.getItem("lastRestaurantId");
+                }
+                // (선택사항) 게시판도 페이지 번호를 기억하고 싶다면 로직 추가 가능
+                // else if (currentPanel === "board") { ... }
+                openPanel(currentPanel, id);
             }
         }
 
@@ -215,6 +236,16 @@
             let url = `/${panelName}`;
             if (panelName === "restaurant" && id) url = `/${panelName}/${id}`;
             else if (panelName === "restaurant_reviews" && id) url = `/restaurant/${id}/reviews`;
+            else if (panelName === "board") {
+                if (id) {
+                    // id가 숫자인지 확인 (숫자면 상세페이지, 아니면 페이지네이션 쿼리)
+                    if (!isNaN(id)) {
+                        url = `/board/${id}`; // 상세 페이지 (/board/1)
+                    } else {
+                        url = `/board${id}`;  // 페이지네이션 (/board?page=2)
+                    }
+                }
+            }
 
             fetch(url)
                 .then(res => res.text())
@@ -233,6 +264,16 @@
                 }
                 initSortDropdown();
                 initSearchPanel(); // 이벤트 리스너 연결
+            }
+            else if (panelName.includes("reviews/write")) {
+                const parts = panelName.split('/'); // ['restaurant', '3', 'reviews', 'write']
+                const restaurantId = parts[1];      // '3'
+
+                bindReviewFormEvent(restaurantId);
+            }
+            else if (panelName === "board/write") {
+                console.log("게시글 작성 패널 감지됨!"); // [디버깅]
+                bindPostFormEvent();
             }
         }
 
@@ -481,6 +522,159 @@
                     onConfirm();
                 }
             };
+        }
+        function bindReviewFormEvent(restaurantId) {
+            const form = document.getElementById("reviewForm");
+
+            // 방어 코드: 폼이 없으면 중단
+            if (!form) {
+                console.error("리뷰 폼을 찾을 수 없습니다.");
+                return;
+            }
+
+            // 기존에 붙어있을 수 있는 이벤트를 제거하고 새로 붙이는 것이 안전하지만,
+            // 패널이 새로 그려지므로 addEventListener만 해도 됩니다.
+            form.addEventListener("submit", function(e) {
+                e.preventDefault(); // 🚫 중요: 페이지 이동(새로고침)을 막습니다!
+                submitReviewAjax(form, restaurantId); // 대신 AJAX 함수 실행
+            });
+        }
+
+        // 3. AJAX 전송 함수 (신규 추가)
+        function submitReviewAjax(form, restaurantId) {
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCsrfToken()
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    openPopup("리뷰가 성공적으로 등록되었습니다!", function() {
+                        changePanel('restaurant_reviews', restaurantId);
+                    });
+
+                } else {
+                    // 실패했을 때도 팝업 띄우기 (콜백 없음)
+                    let errorMsg = "입력 정보를 확인해주세요.";
+                    if(data.errors) {
+                        errorMsg += "\n" + JSON.stringify(data.errors);
+                    }
+                    openPopup(errorMsg);
+                }
+            })
+            .catch(err => {
+                console.error("전송 실패:", err);
+                openPopup("서버 통신 중 오류가 발생했습니다.");
+            });
+        }
+
+        // 게시판
+        function bindPostFormEvent() {
+            const form = document.getElementById("postForm");
+            const fileInput = document.getElementById("imageUpload");
+
+            if (!form) return;
+
+            // (1) 파일 선택 시 미리보기 기능
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0]; // 하나만 선택
+                    const preview = document.getElementById('filePreview');
+                    preview.innerHTML = ''; // 기존 미리보기 초기화
+
+                    if (file && file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const imageDiv = document.createElement('div');
+                            imageDiv.className = 'preview_item';
+                            imageDiv.innerHTML = `
+                                <img src="${e.target.result}" class="preview_image" alt="미리보기">
+                                <button type="button" class="remove_image" onclick="clearImageInput()">×</button>
+                            `;
+                            preview.appendChild(imageDiv);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // (2) 폼 제출 가로채기 (AJAX)
+            form.addEventListener("submit", function(e) {
+                e.preventDefault(); // 페이지 이동 막기
+                submitPostAjax(form);
+            });
+        }
+
+        // 3. 파일 입력 초기화 함수 (미리보기 X버튼 클릭 시)
+        function clearImageInput() {
+            const fileInput = document.getElementById("imageUpload");
+            const preview = document.getElementById('filePreview');
+            if (fileInput) fileInput.value = ''; // 파일 값 비우기
+            if (preview) preview.innerHTML = ''; // 미리보기 지우기
+        }
+
+        // 4. 게시글 AJAX 전송 함수 (신규)
+        function submitPostAjax(form) {
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCsrfToken()
+                }
+            })
+            .then(res => res.json()) // 백엔드에서 JSON 응답을 줘야 함
+            .then(data => {
+                if (data.status === 'success') {
+                    // 성공 화면 표시
+                    showSuccessScreen(data.post_id); // 백엔드에서 post_id를 보내주면 좋음
+                } else {
+                    alert("작성 실패: " + JSON.stringify(data.errors));
+                }
+            })
+            .catch(err => {
+                console.error("게시글 전송 오류:", err);
+                alert("서버 통신 중 오류가 발생했습니다.");
+            });
+        }
+
+        // 5. 성공 화면 전환 함수
+        function showSuccessScreen(postId) {
+            document.getElementById('boardHeader').style.display = 'none';
+            document.getElementById('postForm').style.display = 'none';
+
+            const successContainer = document.getElementById('successContainer');
+            successContainer.style.display = 'flex'; // flex로 해야 중앙 정렬됨
+
+            // '게시글 보기' 버튼에 클릭 이벤트 연결
+            const viewBtn = document.getElementById('btnViewPost');
+            if(postId && viewBtn) {
+                // 상세 페이지 패널 로드 (board_detail 뷰가 필요함)
+                // 만약 상세 페이지가 없다면 그냥 목록으로 이동하도록 설정
+                viewBtn.onclick = () => changePanel('board');
+            }
+        }
+
+
+        function getCsrfToken() {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, 10) === ('csrftoken' + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(10));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
     </script>
 </body>

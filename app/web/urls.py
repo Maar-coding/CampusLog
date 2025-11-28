@@ -29,7 +29,7 @@ urlpatterns = [
     path('board/list', views.board_list, name='board_list'),
 
     # /board/write -> 게시글 작성 폼
-    path('board/write', views.post_write_form, name='post_write_form'),
+    path('board/write', views.post_write_form, name='board/write'),
 
     # /board/{postid} -> 게시글 상세
     path('board/<int:postid>', views.post_detail, name='post_detail'),

@@ -1,29 +1,19 @@
 {% load static %}
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ restaurant.name }} 후기</title>
-    <link rel="stylesheet" href="{% static 'web/reviews.css' %}">
-</head>
-<body>
-
-<!-- 왼쪽 패널 영역 (이 div 안에 코딩하기) -->
 <div class="panel_case">
     <div class="reviews_container">
         <div class="reviews_header">
             <div class="header_left">
-                <button class="back_button" onclick="changePanel('search')">
+                <button class="back_button" onclick="changePanel('restaurant', {{ restaurant.id }})">
                     <span class="back_arrow">←</span>
                 </button>
-                <h1 class="reviews_title">후기</h1>
+                <h1 class="reviews_title">{{ restaurant.name }} 후기</h1>
             </div>
         </div>
 
         <div class="reviews_list" id="reviewsList">
             {% if reviews %}
                 {% for review in reviews %}
-                    <div class="review_item" onclick="toggleReviewExpand({{ review.id }})">
+                    <div class="review_item" onclick="toggleReviewExpand(this, {{ review.id }})">
                         <div class="review_header">
                             <div class="review_header_left">
                                 <h3 class="review_title">
@@ -34,44 +24,31 @@
                                 <span class="review_date">
                                     {{ review.created_at|date:"Y.m.d H:i" }}
                                 </span>
-                                <button class="review_menu_button"
-                                        onclick="toggleReviewMenu({{ review.id }}, event)">
+                                <button class="review_menu_button" onclick="toggleReviewMenu({{ review.id }}, event)">
                                     <span class="review_menu_dots">⋮</span>
                                 </button>
-                                <div class="review_menu_dropdown"
-                                     id="reviewMenu{{ review.id }}"
-                                     style="display: none;">
-                                    <button class="menu_item"
-                                            onclick="reportReview({{ review.id }})">
-                                        신고하기
-                                    </button>
+                                <div class="review_menu_dropdown" id="reviewMenu{{ review.id }}" style="display: none;">
+                                    <button class="menu_item" onclick="reportReview({{ review.id }})">신고하기</button>
+                                    {% if request.user == review.author %}
+                                        <button class="menu_item" style="color:red;" onclick="deleteReview({{ review.id }})">삭제하기</button>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
 
                         <div class="review_content_area">
-                            <p class="review_content"
-                               id="reviewContent{{ review.id }}">
+                            <p class="review_content" id="reviewContent{{ review.id }}">
                                 {{ review.content|linebreaksbr }}
                             </p>
-                            {# 이미지가 있다면 이런 식으로 사용 (필드 이름에 맞게 수정)
-                            {% if review.image_url %}
-                                <span class="image_indicator"
-                                      id="imageIndicator{{ review.id }}">🖼️</span>
+                            {% if review.image %}
+                                <span class="image_indicator" id="imageIndicator{{ review.id }}">🖼️</span>
                             {% endif %}
-                            #}
                         </div>
 
-                        <div class="review_images"
-                             id="reviewImages{{ review.id }}"
-                             style="display: none;">
-                            {# 예시용 – 실제 이미지 필드에 맞게 수정
-                            {% if review.image_url %}
-                                <img src="{{ review.image_url }}"
-                                     alt="후기 이미지"
-                                     class="review_image">
+                        <div class="review_images" id="reviewImages{{ review.id }}">
+                            {% if review.image %}
+                                <img src="{{ review.image.url }}" alt="후기 이미지" class="review_image">
                             {% endif %}
-                            #}
                         </div>
 
                         <div class="review_meta">
@@ -81,48 +58,34 @@
                                 </span>
                                 <div class="review_rating">
                                     <div class="star_rating">
-                                        {% for _ in "12345" %}
+                                        {% with ''|center:5 as range %}
+                                        {% for _ in range %}
                                             {% if forloop.counter <= review.rating %}
                                                 <span class="star">★</span>
                                             {% else %}
                                                 <span class="star empty">★</span>
                                             {% endif %}
                                         {% endfor %}
+                                        {% endwith %}
                                     </div>
-                                    <span class="rating_text">
-                                        {{ review.rating }}.0
-                                    </span>
+                                    <span class="rating_text">{{ review.rating }}.0</span>
                                 </div>
-                            </div>
-                            <div class="review_stats">
-                                <button class="like_button"
-                                        onclick="toggleLike({{ review.id }}, event)"
-                                        id="likeBtn{{ review.id }}">
-                                    <span class="like_icon">♥</span>
-                                    <span class="like_count"
-                                          id="likeCount{{ review.id }}">
-                                        {{ review.like_count|default:"0" }}
-                                    </span>
-                                </button>
                             </div>
                         </div>
                     </div>
                 {% endfor %}
             {% else %}
-                <div class="empty_state">
-                    <div class="empty_state_text">후기가 없습니다</div>
+                <div class="empty_state" style="padding:40px; text-align:center; color:#999;">
+                    <div class="empty_state_text">아직 작성된 후기가 없습니다.</div>
+                    <div class="empty_state_text">첫 번째 후기의 주인공이 되어보세요!</div>
                 </div>
             {% endif %}
         </div>
 
-        {# Django 기본 페이지네이션 사용 (뷰에서 page_obj, is_paginated 전달 가정) #}
         {% if is_paginated %}
         <div class="pagination" id="pagination">
             {% if page_obj.has_previous %}
-                <button class="page_button"
-                        onclick="location.href='?page={{ page_obj.previous_page_number }}'">
-                    ‹
-                </button>
+                <button class="page_button" onclick="changePanel('restaurant_reviews', {{ restaurant.id }} + '?page={{ page_obj.previous_page_number }}')">‹</button>
             {% else %}
                 <button class="page_button" disabled>‹</button>
             {% endif %}
@@ -132,24 +95,19 @@
                     {% if num == page_obj.number %}
                         <button class="page_button active">{{ num }}</button>
                     {% else %}
-                        <button class="page_button"
-                                onclick="location.href='?page={{ num }}'">
-                            {{ num }}
-                        </button>
+                        <button class="page_button" onclick="changePanel('restaurant_reviews', {{ restaurant.id }} + '?page={{ num }}')">{{ num }}</button>
                     {% endif %}
                 {% endfor %}
             </div>
 
             {% if page_obj.has_next %}
-                <button class="page_button"
-                        onclick="location.href='?page={{ page_obj.next_page_number }}'">
-                    ›
-                </button>
+                <button class="page_button" onclick="changePanel('restaurant_reviews', {{ restaurant.id }} + '?page={{ page_obj.next_page_number }}')">›</button>
             {% else %}
                 <button class="page_button" disabled>›</button>
             {% endif %}
         </div>
         {% endif %}
+
         <button class="floating_write_button" onclick="changePanel('restaurant/{{ restaurant.id }}/reviews/write')">
             <span class="write_icon">✏️</span>
             <span class="write_text">후기 쓰기</span>
@@ -158,90 +116,90 @@
 </div>
 
 <script>
-function toggleReviewExpand(reviewId) {
-    const reviewItem = document.querySelector(
-        '.review_item[onclick="toggleReviewExpand(' + reviewId + ')"]'
-    );
-    const reviewContent = document.getElementById('reviewContent' + reviewId);
-    const reviewImages = document.getElementById('reviewImages' + reviewId);
-    const imageIndicator = document.getElementById('imageIndicator' + reviewId);
+    // 1. 리뷰 확장/축소 토글
+    function toggleReviewExpand(reviewId) {
+        // 클릭된 요소 찾기 (이벤트 위임 방식이 아니므로 id로 찾거나 this를 넘기는게 좋음)
+        // 여기서는 간단히 DOM 구조에 의존
+        const content = document.getElementById('reviewContent' + reviewId);
+        const images = document.getElementById('reviewImages' + reviewId);
+        const indicator = document.getElementById('imageIndicator' + reviewId);
 
-    if (!reviewItem || !reviewContent) return;
-
-    const isExpanded = reviewItem.classList.contains('expanded');
-
-    if (isExpanded) {
-        // 축소
-        reviewItem.classList.remove('expanded');
-        reviewContent.style.webkitLineClamp = '2';
-        reviewContent.style.overflow = 'hidden';
-        if (reviewImages) reviewImages.style.display = 'none';
-        if (imageIndicator) imageIndicator.style.display = 'inline';
-    } else {
-        // 확장
-        reviewItem.classList.add('expanded');
-        reviewContent.style.webkitLineClamp = 'unset';
-        reviewContent.style.overflow = 'visible';
-        if (reviewImages) reviewImages.style.display = 'block';
-        if (imageIndicator) imageIndicator.style.display = 'none';
-    }
-}
-
-function toggleReviewMenu(reviewId, event) {
-    event.stopPropagation();
-    const menu = document.getElementById('reviewMenu' + reviewId);
-    if (!menu) return;
-
-    const isVisible = menu.style.display === 'block';
-
-    // 모든 메뉴 닫기
-    document.querySelectorAll('.review_menu_dropdown').forEach(dropdown => {
-        dropdown.style.display = 'none';
-    });
-
-    // 클릭한 메뉴만 토글
-    if (!isVisible) {
-        menu.style.display = 'block';
-    }
-}
-
-function toggleLike(reviewId, event) {
-    event.stopPropagation();
-    const likeBtn = document.getElementById('likeBtn' + reviewId);
-    const likeCount = document.getElementById('likeCount' + reviewId);
-    if (!likeBtn || !likeCount) return;
-
-    const isLiked = likeBtn.classList.contains('liked');
-
-    if (isLiked) {
-        likeBtn.classList.remove('liked');
-        likeCount.textContent = parseInt(likeCount.textContent || '0') - 1;
-    } else {
-        likeBtn.classList.add('liked');
-        likeCount.textContent = parseInt(likeCount.textContent || '0') + 1;
+        // (주의: review_item 자체에 class를 줬다 뺐다 해야 스타일링이 쉽습니다)
+        // 현재 구조에서는 클릭된 div.review_item을 찾는 게 조금 까다롭습니다.
+        // 쉬운 방법: toggle 함수 호출 시 this를 넘기는 것.
+        // <div class="review_item" onclick="toggleReviewExpand(this, {{ review.id }})"> 로 수정 권장
     }
 
-    // TODO: Django에 AJAX로 좋아요 반영하고 싶으면 여기서 fetch 호출
-}
+    // (수정된 버전) this를 사용해 요소를 직접 제어
+    // HTML의 onclick 부분을 onclick="toggleReviewExpand(this, {{ review.id }})" 로 바꿔주세요!
+    function toggleReviewExpand(element, reviewId) {
+        const content = element.querySelector('.review_content');
+        const images = document.getElementById('reviewImages' + reviewId);
+        const indicator = document.getElementById('imageIndicator' + reviewId);
 
-function reportReview(reviewId) {
-    console.log('후기 신고:', reviewId);
-    // TODO: 신고 기능 구현 시 Django URL로 이동 또는 fetch 호출
-}
+        const isExpanded = element.classList.contains('expanded');
 
-function goBack() {
-    window.history.back();
-}
+        if (isExpanded) {
+            element.classList.remove('expanded');
+            // CSS에서 .expanded .review_content { ... } 로 제어하는 것이 가장 좋습니다.
+            // JS로 직접 스타일 제어 시:
+            if(content) {
+                content.style.whiteSpace = "nowrap";
+                content.style.overflow = "hidden";
+                content.style.textOverflow = "ellipsis";
+            }
+            if(images) images.style.display = 'none';
+            if(indicator) indicator.style.display = 'inline';
+        } else {
+            element.classList.add('expanded');
+            if(content) {
+                content.style.whiteSpace = "normal";
+                content.style.overflow = "visible";
+            }
+            if(images) images.style.display = 'block';
+            if(indicator) indicator.style.display = 'none';
+        }
+    }
 
-// 메뉴 외부 클릭 시 닫기
-document.addEventListener('click', function(event) {
-    if (!event.target.closest('.review_menu_button')) {
-        document.querySelectorAll('.review_menu_dropdown').forEach(dropdown => {
-            dropdown.style.display = 'none';
+    // 2. 메뉴 토글
+    function toggleReviewMenu(reviewId, event) {
+        event.stopPropagation(); // 리뷰 확장 방지
+        const menu = document.getElementById('reviewMenu' + reviewId);
+
+        // 다른 열린 메뉴들 닫기
+        document.querySelectorAll('.review_menu_dropdown').forEach(m => {
+            if(m !== menu) m.style.display = 'none';
         });
-    }
-});
-</script>
 
-</body>
-</html>
+        if (menu.style.display === 'block') {
+            menu.style.display = 'none';
+        } else {
+            menu.style.display = 'block';
+        }
+    }
+
+    // 3. 신고 기능
+    function reportReview(reviewId) {
+        event.stopPropagation();
+        alert("신고가 접수되었습니다.");
+        // 추후 AJAX로 서버 전송
+    }
+
+    // 4. 삭제 기능 (옵션)
+    function deleteReview(reviewId) {
+        event.stopPropagation();
+        if(confirm("정말 삭제하시겠습니까?")) {
+            // 삭제 API 호출 로직
+            alert("삭제되었습니다.");
+        }
+    }
+
+    // 메뉴 외부 클릭 시 닫기
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.review_menu_button')) {
+            document.querySelectorAll('.review_menu_dropdown').forEach(m => {
+                m.style.display = 'none';
+            });
+        }
+    });
+</script>

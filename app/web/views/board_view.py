@@ -5,7 +5,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from web.models import Post
 from web.forms import PostForm
-
+from django.http import JsonResponse
 
 def board(request):
     """메인 게시판 페이지"""
@@ -79,10 +79,23 @@ def post_write_form(request):
     """
     GET /board/write : 게시글 작성 폼
     """
-    form = PostForm()
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
 
-    context = {
-        'form': form,
-    }
+            # JSON으로 성공 응답 보냄
+            return JsonResponse({
+                'status': 'success',
+                'post_id': post.id,
+                'message': '게시글이 등록되었습니다.'
+            })
+        else:
+            return JsonResponse({'status': 'fail', 'errors': form.errors}, status=400)
 
-    return render(request, 'web/board_upload.html', context)
+    else:
+        form = PostForm()
+
+    return render(request, 'web/board_upload.html', {'form': form})
