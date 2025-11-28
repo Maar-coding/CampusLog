@@ -32,9 +32,7 @@
     <!-- 기본 패널 (component.css) -->
     <aside id="panel" style="display: none;"></aside>
 
-    <script src="../../static/web/search_panel.js"></script>
-    <script src="../../static/web/reviews_write_form.js"></script>
-    <script src="../../static/web/borad_panel.js"></script>
+
     <script>
         // 전역변수 선언
         let map;
@@ -170,8 +168,6 @@
         function toggleFilter(tag) {
             // 같은 태그를 다시 누르면
             if (currentFilter === tag) {
-                console.log("필터링 해제");
-                console()
                 clearFilter();
                 currentFilter = null;
                 return;
@@ -189,6 +185,9 @@
             });
         }
 
+
+
+
         // 필터 아이콘 클릭 시 필터링 실행
         document.getElementById("restaurant").addEventListener("click", () => {
             toggleFilter("restaurant");
@@ -203,8 +202,9 @@
         });
 
 
+
         // 패널 관련 JS
-        let currentPanel = "search_panel";     // 마지막으로 열린 패널
+        let currentPanel = "search";     // 마지막으로 열린 패널
 
         // 패널 여닫기
         // 패널 버튼 누를 때 작동
@@ -270,7 +270,7 @@
         
         function initPanelByName(panelName,id) {
             // search_panel.html이 로드된 경우에만 실행
-            if (panelName === "search_panel") {
+            if (panelName === "search") {
                 onFilterClick();
                 loadStores();
                 initSortDropdown();
@@ -358,7 +358,7 @@
                 return;
             }
 
-            if (id === restaurant) {
+            if (id === restaurant_panel) {
                 const url = `/restaurant/${id}`;
             }
 
@@ -378,6 +378,857 @@
                     initPanelByName(panelName, id);
                 })
                 .catch(err => console.error(`${url} 로딩 실패`, err));
+        }
+
+
+
+
+
+        // search_panel.html
+
+        
+
+        // 매장 필터링 함수
+        function onFilterClick(tag, clickedEl) {
+            // 1) 기존 식당 필터링
+            loadStores(tag);
+
+            // 2) 모든 필터 버튼을 순회하면서 블러 처리
+            const filters = document.querySelectorAll('.search_panel_filter');
+
+            filters.forEach(img => {
+                if (img === clickedEl) {
+                    // 클릭된 버튼: 블러 제거
+                    img.classList.remove('blurred-filter');
+                } else {
+                    // 나머지 2개: 블러 적용
+                    img.classList.add('blurred-filter');
+                }
+            });
+        }
+
+        function loadStores(tag) {
+            
+            // 식당이 없다면
+            if (!storeData || storeData.length === 0) {
+                console.warn("storeData가 아직 비었습니다. 먼저 loadRestaurantDataFromDB()를 호출하세요.");
+                return;
+            }
+
+            const filtered = storeData.filter(store => store.tags.includes(tag));
+
+            // 패널 리스트만 필터링해서 다시 렌더링
+            renderStoreList(filtered);
+        }
+
+
+
+
+        // 정렬방법 드롭다운 텍스트 바꾸기
+        function initSortDropdown() {
+            const button = document.getElementById("sort_dropdown_button");
+            const menu = document.getElementById("sort_dropdown_menu");
+
+            // 요소 못 찾으면 바로 종료 (다른 패널에서 불렸을 때 대비)
+            if (!button || !menu) {
+                console.warn("정렬 드롭다운 요소를 찾지 못했습니다.");
+                return;
+            }
+
+            // menu == NULL이면 오류, 오류방지 위치 (위 코드에서 잡아줌)
+            const items = menu.querySelectorAll(".dropdown_list");
+
+            // 버튼 클릭 → 메뉴 열기/닫기
+            button.addEventListener("click", (e) => {
+                e.stopPropagation();
+                menu.classList.toggle("open");
+            });
+
+            // li 클릭 이벤트 등록
+            items.forEach(item => {
+                item.addEventListener("click", () => {
+
+                    // 1️⃣ 버튼 텍스트 변경
+                    button.childNodes[0].textContent = item.textContent;
+
+                    // 2️⃣ 드롭다운 닫기
+                    menu.classList.remove("open");
+
+                    // 3️⃣ 선택된 항목에 따라 함수 실행
+                    handleSort(item.textContent);
+                });
+            });
+
+            // 바깥 클릭하면 닫기
+            document.addEventListener("click", (e) => {
+                if (!e.target.closest(".dropdown")) {
+                    menu.classList.remove("open");
+                }
+            });
+        }
+
+        // 회원가입 폼 AJAX 제출 + 성공 팝업 → 로그인 패널 이동
+        // 회원가입 폼 AJAX 제출 + 성공 팝업 → 로그인 패널 이동
+        function handleRegisterSubmit(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: form.method || "POST",
+                body: formData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            })
+                    .then(async (res) => {
+                        const html = await res.text();       // 응답 본문 텍스트로 읽기
+                        const panel = document.getElementById("panel");
+
+                        // 1️⃣ 중복 아이디 케이스 탐지 (응답 내용으로 판단)
+                        //   → Network 탭 Response 안에 실제 문구에 맞춰서 수정해도 됨
+                        if (
+                                html.includes("중복된 아이디") ||
+                                html.includes("이미 존재하는 아이디")
+                        ) {
+                            openPopup("이미 사용 중인 아이디입니다.\n다른 아이디를 사용해 주세요.");
+                            return;
+                        }
+
+                        // 2️⃣ 템플릿에서 form.errors / error_message 로 렌더된 경우
+                        if (html.includes('id="registerError"')) {
+                            panel.innerHTML = html;   // 에러 포함된 register 패널 다시 렌더링
+                            return;
+                        }
+
+                        // 3️⃣ 여기까지 왔는데 상태 코드가 200이 아니면 → 진짜 서버 오류 취급
+                        if (!res.ok) {
+                            console.error("회원가입 서버 오류:", res.status);
+                            openPopup(
+                                    "회원가입 중 서버 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요."
+                            );
+                            return;
+                        }
+
+                        // 4️⃣ 모든 에러 조건에 안 걸렸으면 → 회원가입 성공으로 간주
+                        openPopup("회원가입에 성공하였습니다!", () => {
+                            // 확인 누르면 로그인 패널로 이동
+                            changePanel("login");
+                        });
+                    })
+                    .catch((err) => {
+                        console.error("회원가입 요청 실패", err);
+                        openPopup(
+                                "네트워크 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요."
+                        );
+                    });
+
+            return false;
+        }
+
+
+        // 로그인 폼 AJAX 제출 + 실패 시 패널 안에서만 갱신 + 성공 시 팝업 후 search 패널로 이동
+        function handleLoginSubmit(event) {
+            event.preventDefault();  // 기본 폼 전송 막기
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: form.method || "POST",
+                body: formData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                redirect: "follow"   // 기본값이지만 명시
+            })
+                    .then(async (res) => {
+                        const html = await res.text();      // 응답 전체를 문자열로
+                        const panel = document.getElementById("panel");
+
+                        // 🔹 1) 진짜 서버 오류 (500 등)
+                        if (!res.ok && !res.redirected) {
+                            console.error("로그인 서버 오류:", res.status);
+                            openPopup("로그인 중 서버 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.");
+                            return;
+                        }
+
+                        // 🔹 2) 로그인 실패 케이스
+                        //    - Django 기본 LoginView는 실패 시 redirect 없이 로그인 템플릿을 다시 렌더링
+                        //    - 그 템플릿 안에 우리가 만든 id="loginError"가 들어 있음
+                        if (!res.redirected && html.includes('id="loginError"')) {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, "text/html");
+                            const loginPanel = doc.querySelector(".panel_case.login_panel");
+
+                            if (loginPanel) {
+                                // 패널 영역만 다시 교체
+                                panel.innerHTML = loginPanel.outerHTML;
+                            } else {
+                                // 혹시 구조가 달라졌으면 그대로 넣어서라도 에러 메시지 보이게
+                                panel.innerHTML = html;
+                            }
+                            return;
+                        }
+
+                        // 🔹 3) 여기까지 왔으면 = 대부분 "로그인 성공" (리다이렉트가 있었던 경우)
+                        openPopup("로그인에 성공하였습니다!", () => {
+                            // 팝업의 확인 버튼을 누르면, 패널 내용만 search 패널로 교체
+                            changePanel("search");
+                        });
+                    })
+                    .catch((err) => {
+                        console.error("로그인 요청 실패", err);
+                        openPopup("네트워크 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.");
+                    });
+
+            return false;   // onsubmit="return handleLoginSubmit(event)" 에서 기본 제출 막기
+        }
+
+
+        // 정렬방법 드롭다운 선택시 함수 실행
+        // 정렬방법 선택시 API 호출 기준 변경
+        function handleSort(type) {
+            if (type === "가나다순")      loadRestaurants("name");
+            else if (type === "별점순")   loadRestaurants("rating");
+            else if (type === "거리순")   loadRestaurants("distance");
+            else if (type === "리뷰개수순") loadRestaurants("review");
+        }
+
+        // ✅ storeData 기준으로 정렬해서 화면에 뿌리는 함수
+        function loadRestaurants(sortKey) {
+            // 기존 데이터 복사
+            let sorted = [...storeData];
+
+            if (sortKey === "name") {
+                sorted.sort((a, b) => a.name.localeCompare(b.name)); // 가나다순
+            }
+
+            // 별점, 거리, 리뷰개수는 나중에 데이터 생기면 추가
+            // else if (sortKey === "rating") { ... }
+            // else if (sortKey === "distance") { ... }
+            // else if (sortKey === "review") { ... }
+
+            renderStoreList(sorted);
+        }
+
+
+        // 백엔드 데이터 연동으로 변경 필요
+
+        /* ---------------------------
+        1) 식당 데이터 리스트
+        ---------------------------- */
+        let storeData = [];
+
+        // 2. 백엔드에서 데이터 가져오는 함수 생성
+        function loadRestaurantDataFromDB() {
+            fetch('/api/restaurants') // 우리가 만든 API 호출
+                .then(res => res.json())
+                .then(data => {
+                    console.log("식당 데이터 로드 완료:", data);
+
+                    // (1) 전역 변수 storeData 업데이트
+                    storeData = data;
+
+                    // (2) 지도에 마커 찍기
+                    storeData.forEach(store => {
+                        createMarker(store.lat, store.lng, store.tags, store.id);
+                    });
+
+                     // (3) 패널에 리스트 렌더링 (초기화)
+                    renderStoreList(storeData);
+                })
+                .catch(err => console.error("식당 데이터 로드 실패:", err));
+        }
+
+
+        /* ---------------------------
+        2) 리스트 렌더 함수
+        ---------------------------- */
+        function renderStoreList(list) {
+            const container = document.getElementById("store_list");
+            const template = document.getElementById("store_card_template");
+
+            container.innerHTML = "";
+
+            if (!list || list.length === 0) {
+                container.innerHTML = `<p class="no_result">검색 결과가 없습니다.</p>`;
+                return;
+            }
+
+            list.forEach(store => {
+                const clone = template.content.cloneNode(true);
+
+                // ⭐ store_card div에 id 주입
+                const card = clone.querySelector(".store_card");
+                card.dataset.id = store.id;
+
+                clone.querySelector(".store_img").src = store.image;
+                clone.querySelector(".store_name").textContent = store.name;
+                clone.querySelector(".store_time").textContent = store.time;
+
+                // ⭐ "후기 보기" 클릭 이벤트 연결
+                const reviewBtn = clone.querySelector(".store_review");
+                reviewBtn.addEventListener("click", function () {
+                    const id = card.dataset.id;       // ⭐ 카드에서 id 가져오기
+                    openReviewPanel("restaurant_reviews", id);
+                });
+
+                container.appendChild(clone);
+            });
+        }
+
+        function openReviewPanel(panelName = "restaurant_reviews", id = null) {
+            const panel = document.getElementById("panel");
+            currentPanel = panelName;
+
+            if (!id) {
+                console.error("openReviewPanel 호출 시 id 없음");
+                return;
+            }
+
+            const url = `/restaurant/${id}/reviews`;
+
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    panel.innerHTML = html;
+                    initPanelByName(panelName, id);
+                })
+                .catch(err => console.error(`${url} 로딩 실패`, err));
+        }
+
+
+        /* ---------------------------
+        3) 검색 실행 함수
+        ---------------------------- */
+        function runSearch() {
+            const keyword = document.getElementById("search_input").value.trim().toLowerCase();
+
+            if (!keyword) {
+                renderStoreList(storeData);  // 검색어 없으면 전체 출력
+                return;
+            }
+
+            const filtered = storeData.filter(store =>
+                store.name.toLowerCase().includes(keyword)
+            );
+
+            renderStoreList(filtered);
+        }
+
+
+        /* ---------------------------
+        4) 검색 패널 초기화 함수
+        ---------------------------- */
+        function initSearchPanel() {
+            const input = document.getElementById("search_input");
+            const button = document.querySelector(".search_button");
+
+            // 엔터 입력 시 실행
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    runSearch();
+                }
+            });
+
+            // 검색 버튼 클릭 시 실행
+            button.addEventListener("click", () => {
+                runSearch();
+            });
+
+            // 패널 처음 열릴 때 전체 리스트 출력
+            renderStoreList(storeData);
+        }
+
+        function openPopup(message, onConfirm) {
+          const overlay = document.getElementById("globalPopup");
+          const msgEl = document.getElementById("globalPopupMessage");
+          const btn = document.getElementById("globalPopupConfirm");
+
+          if (!overlay || !msgEl || !btn) return;
+
+          msgEl.textContent = message;
+          overlay.style.display = "flex";
+
+          btn.onclick = () => {
+            overlay.style.display = "none";
+            if (typeof onConfirm === "function") {
+              onConfirm();
+            }
+          };
+        }
+
+
+        // 페이지 로드되면 패널 열기
+        document.addEventListener("DOMContentLoaded", function () {
+            panelButton();
+        });
+
+        // search_panel.html
+        // ㅇㅇ님 환영합니다. 텍스트 삽입
+        document.addEventListener("DOMContentLoaded", async function () {
+            try {
+                const res = await fetch("/api/user/");
+                const data = await res.json();
+
+                const nicknameEl = document.getElementById("nicknameArea");
+
+                if (nicknameEl) {
+                    nicknameEl.innerText = `${data.nickname}님 환영합니다.`;
+                }
+            }
+            catch(err) {
+                console.error("닉네임 가져오기 실패:", err);
+            }
+        });
+
+
+
+
+        // reviews_write_form.html
+        let selectedRating = 0;
+        let selectedImages = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initRatingStars();
+            initImageUpload();
+            initForm();
+        });
+
+        function initRatingStars() {
+            const stars = document.querySelectorAll('.rating_star');
+            const ratingText = document.getElementById('ratingText');
+
+            stars.forEach((star, index) => {
+                star.addEventListener('click', function() {
+                    selectedRating = index + 1;
+                    updateStarDisplay();
+                    ratingText.textContent = `${selectedRating}점`;
+                });
+
+                star.addEventListener('mouseenter', function() {
+                    highlightStars(index + 1);
+                });
+            });
+
+            document.querySelector('.rating_input').addEventListener('mouseleave', function() {
+                updateStarDisplay();
+            });
+        }
+
+        function highlightStars(rating) {
+            const stars = document.querySelectorAll('.rating_star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('hover');
+                } else {
+                    star.classList.remove('hover');
+                }
+            });
+        }
+
+        function updateStarDisplay() {
+            const stars = document.querySelectorAll('.rating_star');
+            stars.forEach((star, index) => {
+                star.classList.remove('hover');
+                if (index < selectedRating) {
+                    star.classList.add('selected');
+                } else {
+                    star.classList.remove('selected');
+                }
+            });
+        }
+
+        function initImageUpload() {
+            const imageInput = document.getElementById('imageInput');
+            const imagePreview = document.getElementById('imagePreview');
+
+            imageInput.addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                selectedImages = files;
+                displayImagePreview(files);
+            });
+        }
+
+        function displayImagePreview(files) {
+            const imagePreview = document.getElementById('imagePreview');
+            imagePreview.innerHTML = '';
+
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview_item';
+                    previewItem.innerHTML = `
+                        <img src="${e.target.result}" alt="미리보기" class="preview_image">
+                        <button type="button" class="remove_image" onclick="removeImage(${index})">×</button>
+                    `;
+                    imagePreview.appendChild(previewItem);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeImage(index) {
+            selectedImages.splice(index, 1);
+            displayImagePreview(selectedImages);
+        }
+
+        function initForm() {
+            const form = document.getElementById('reviewForm');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitReview();
+            });
+        }
+
+        function submitReview() {
+            const title = document.getElementById('reviewTitle').value;
+            const content = document.getElementById('reviewContent').value;
+
+            if (!title.trim()) {
+                alert('제목을 입력하세요.');
+                return;
+            }
+
+            if (!content.trim()) {
+                alert('후기 내용을 입력하세요.');
+                return;
+            }
+
+            if (selectedRating === 0) {
+                alert('별점을 선택하세요.');
+                return;
+            }
+
+            // 후기 등록 로직
+            console.log('후기 등록:', {
+                title,
+                content,
+                rating: selectedRating,
+                images: selectedImages
+            });
+
+            showSuccessPage();
+        }
+
+        function showSuccessPage() {
+            document.querySelector('.panel_case').innerHTML = `
+                <div class="upload_success_container">
+                    <div class="success_content">
+                        <div class="success_icon">✓</div>
+                        <h1 class="success_title">후기 등록 완료</h1>
+                        <p class="success_message">후기가 성공적으로 등록되었습니다.<br>다른 사람들에게 도움이 되는 후기를 작성해 주셔서 감사합니다!</p>
+                    </div>
+                    <div class="success_buttons">
+                        <button class="btn_primary single_button" onclick="goBack()">후기 목록으로</button>
+                    </div>
+                </div>
+            `;
+        }
+
+
+
+
+
+        // borad_panel.html
+        // 게시글 데이터 및 상태 관리
+        let posts = [];
+        let currentPage = 1;
+        let totalPages = 1;
+        let searchKeyword = '';
+
+        // 페이지 로드 시 게시글 목록 불러오기
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPosts();
+        });
+
+        // 게시글 목록 불러오기
+        async function loadPosts(page = 1, keyword = '') {
+            try {
+                showLoading(true);
+
+                // API 호출 (예시 데이터로 대체)
+                const response = await mockApiCall(page, keyword);
+
+                posts = response.posts;
+                currentPage = response.currentPage;
+                totalPages = response.totalPages;
+
+                renderPosts();
+                renderPagination();
+
+            } catch (error) {
+                console.error('게시글 로드 오류:', error);
+                showError('게시글을 불러오는데 실패했습니다.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Mock API 호출 (실제 API로 교체 필요)
+        function mockApiCall(page, keyword) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const mockPosts = [
+                        {
+                            id: 1,
+                            title: '캐퍼스 맛집 추천해주세요!',
+                            content: '학교 근처에 맛있는 식당이 있나요? 추천 부탁드립니다. 특히 한식, 중식, 일식 등 다양한 종류의 음식을 즐길 수 있는 곳이면 좋겠어요.',
+                            author: '맛집탐험가',
+                            createdAt: '2024-01-15 14:30',
+                            views: 145,
+                            likes: 23,
+                            hasImage: true
+                        },
+                        {
+                            id: 2,
+                            title: '도서관 24시간 이용 가능한가요?',
+                            content: '시험기간에 밤늦게 공부하고 싶은데 도서관 24시간 이용이 가능한지 궁금합니다. 혹시 아시는 분 있으면 답변 부탁드려요.',
+                            author: '공부벌레',
+                            createdAt: '2024-01-15 13:45',
+                            views: 89,
+                            likes: 15
+                        },
+                        {
+                            id: 3,
+                            title: '자료구조 스터디 그룹 모집합니다!',
+                            content: '자료구조 과목을 함께 공부할 스터디 그룹을 모집합니다. 주 2회 모임 예정이고, 온라인/오프라인 병행 가능합니다. 관심 있으신 분들 연락주세요!',
+                            author: '코딩러버',
+                            createdAt: '2024-01-15 12:20',
+                            views: 234,
+                            likes: 42,
+                            hasImage: true
+                        },
+                        {
+                            id: 4,
+                            title: '학생회 선거 후보 공약 발표',
+                            content: '안녕하세요, 학생회장 후보 김사람입니다. 저의 공약사항을 말씀드리겠습니다. 1. 학식 개선 2. 도서관 시설 확충 3. 축제 확대 등입니다.',
+                            author: '김사람',
+                            createdAt: '2024-01-15 11:30',
+                            views: 312,
+                            likes: 67
+                        },
+                        {
+                            id: 5,
+                            title: '기말고사 시간표 공유해요',
+                            content: '기말고사 시간표가 나왔네요! 모두 시험 준비 열심히 하시고 좋은 결과 있기를 바랍니다. 특히 전공과목들은 미리미리 준비하세요!',
+                            author: '선배님',
+                            createdAt: '2024-01-15 10:15',
+                            views: 456,
+                            likes: 89,
+                            hasImage: true
+                        },
+                        {
+                            id: 6,
+                            title: '캐퍼스 내 카페 추천',
+                            content: '공부하다가 커피 마시고 싶을 때 갈 만한 곳이 있나요? 캐퍼스 내에 카페가 있는지 궁금합니다.',
+                            author: '커피중독자',
+                            createdAt: '2024-01-15 09:45',
+                            views: 78,
+                            likes: 12
+                        },
+                        {
+                            id: 7,
+                            title: '중고 책 거래 하실 분?',
+                            content: '전공서적 중고로 판매합니다. 상태 좋고 가격도 저렴합니다. 필요하신 분 연락주세요. 직거래 선호합니다.',
+                            author: '책판매자',
+                            createdAt: '2024-01-15 08:30',
+                            views: 156,
+                            likes: 8
+                        },
+                        {
+                            id: 8,
+                            title: '대학원 진학 상담',
+                            content: '대학원 진학을 고려하고 있는데, 경험이 있으신 선배님들의 조언을 구하고 싶습니다. 특히 연구실 선택과 지도교수 선정에 대해 알고 싶어요.',
+                            author: '진학고민자',
+                            createdAt: '2024-01-14 16:20',
+                            views: 203,
+                            likes: 34
+                        }
+                    ];
+
+                    const filteredPosts = keyword ?
+                        mockPosts.filter(post =>
+                            post.title.includes(keyword) || post.content.includes(keyword)
+                        ) : mockPosts;
+
+                    resolve({
+                        posts: filteredPosts,
+                        currentPage: page,
+                        totalPages: Math.ceil(filteredPosts.length / 10)
+                    });
+                }, 500);
+            });
+        }
+
+        // 게시글 목록 렌더링
+        function renderPosts() {
+            const postList = document.getElementById('postList');
+
+            if (posts.length === 0) {
+                postList.innerHTML = `
+                    <div class="empty_state">
+                        <div class="empty_state_text">게시글이 없습니다</div>
+                        <div class="empty_state_subtext">첫 번째 게시글을 작성해보세요!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            postList.innerHTML = posts.map(post => `
+                <div class="post_item">
+                    <div class="post_header">
+                        <h3 class="post_title" onclick="openPost(${post.id})">${post.title}</h3>
+                        <div class="post_header_right">
+                            <span class="post_date">${post.createdAt}</span>
+                            <button class="post_menu_button" onclick="togglePostMenu(${post.id}, event)">
+                                <span class="post_menu_dots">⋮</span>
+                            </button>
+                            <div class="post_menu_dropdown" id="postMenu${post.id}" style="display: none;">
+                                <button class="menu_item" onclick="reportPost(${post.id})">신고하기</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post_content_area" onclick="openPost(${post.id})">
+                        <p class="post_content">${post.content}</p>
+                        ${post.hasImage ? '<span class="image_indicator">🖼️</span>' : ''}
+                    </div>
+                    <div class="post_meta" onclick="openPost(${post.id})">
+                        <span class="post_author">${post.author}</span>
+                        <div class="post_stats">
+                            <span>조회 ${post.views}</span>
+                            <span>좋아요 ${post.likes}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 페이지네이션 렌더링
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            const pageNumbers = document.getElementById('pageNumbers');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            if (totalPages <= 1) {
+                pagination.style.display = 'none';
+                return;
+            }
+
+            pagination.style.display = 'flex';
+
+            // 이전/다음 버튼 상태
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+
+            // 페이지 번호 버튼
+            let pageNumbersHtml = '';
+            for (let i = 1; i <= totalPages; i++) {
+                pageNumbersHtml += `
+                    <button class="page_button ${i === currentPage ? 'active' : ''}"
+                            onclick="changePage(${i})">${i}</button>
+                `;
+            }
+            pageNumbers.innerHTML = pageNumbersHtml;
+        }
+
+        // 페이지 변경
+        function changePage(page) {
+            if (page === 'prev') {
+                page = Math.max(1, currentPage - 1);
+            } else if (page === 'next') {
+                page = Math.min(totalPages, currentPage + 1);
+            }
+
+            if (page !== currentPage) {
+                loadPosts(page, searchKeyword);
+            }
+        }
+
+        // 검색 기능
+        function searchPosts() {
+            const searchInput = document.getElementById('searchInput');
+            searchKeyword = searchInput.value.trim();
+            currentPage = 1;
+            loadPosts(1, searchKeyword);
+        }
+
+        // Enter 키로 검색
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchPosts();
+            }
+        });
+
+        // 게시글 상세 보기
+        function openPost(postId) {
+            console.log('게시글 상세 보기:', postId);
+            alert(`게시글 ${postId}번 상세 보기 기능을 구현해주세요.`);
+        }
+
+        // 게시글 메뉴 토글
+        function togglePostMenu(postId, event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById(`postMenu${postId}`);
+            // 다른 게시글 메뉴 닫기
+            document.querySelectorAll('.post_menu_dropdown').forEach(menu => {
+                if (menu.id !== `postMenu${postId}`) {
+                    menu.style.display = 'none';
+                }
+            });
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+
+        // 메뉴 외부 클릭 시 닫기
+        document.addEventListener('click', function(e) {
+            const postMenuButtons = document.querySelectorAll('.post_menu_button');
+            const postMenus = document.querySelectorAll('.post_menu_dropdown');
+
+            let clickedPostMenu = false;
+            postMenuButtons.forEach(button => {
+                if (button.contains(e.target)) {
+                    clickedPostMenu = true;
+                }
+            });
+
+            postMenus.forEach(menu => {
+                if (menu.contains(e.target)) {
+                    clickedPostMenu = true;
+                }
+            });
+
+            if (!clickedPostMenu) {
+                postMenus.forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+
+        // 로딩 상태 표시
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+
+            if (show) {
+                loading.style.display = 'flex';
+            } else {
+                loading.style.display = 'none';
+            }
+        }
+
+        // 오류 메시지 표시
+        function showError(message) {
+            const postList = document.getElementById('postList');
+            postList.innerHTML = `
+                <div class="empty_state">
+                    <div class="empty_state_text">오류가 발생했습니다</div>
+                    <div class="empty_state_subtext">${message}</div>
+                </div>
+            `;
         }
     </script>
 </body>
