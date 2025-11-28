@@ -190,9 +190,6 @@
     transition: background-color 0.15s ease;
 }
 
-.search_button:hover {
-    background-color: #e0e0e0;
-}
 
 /* 게시글 목록 */
 .post_list {

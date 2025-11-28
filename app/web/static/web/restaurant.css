@@ -1,6 +1,6 @@
 /* ===== 공통: 왼쪽 패널(모달) 영역 ===== */
 .restaurant_inner {
-  padding: 28px 28px 28px;   /* 위쪽 여백 넉넉하게 */
+  padding: 10px 10px 10px;   /* 위쪽 여백 넉넉하게 */
   height: 100%;
   overflow-y: auto;
   box-sizing: border-box;
@@ -268,7 +268,7 @@
 }
 
 .rating_main {
-  width: 90px;
+  width: 95px;
   flex-shrink: 0;
   text-align: center;
 }

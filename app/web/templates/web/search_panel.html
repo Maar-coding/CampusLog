@@ -1,14 +1,28 @@
 <!-- 왼쪽 패널 영역 (이 div 안에 코딩하기) -->
 <div class="panel_case">  <!-- (component.css) -->
-    
+
     <section class="search_panel_login_case">
-        <div class="search_panel_login_button" onclick="changePanel('login')">로그인</div>
-        <p class="search_panel_login_text" id="nicknameArea"></p> <!-- ㅇㅇ님 환영합니다. -->
+        <img src="../../static/img/campuslog_logo.png" class="search_panel_logo" onclick="location.href='{% url 'index' %}'">
+        <div class="auth_action_box">
+            {% if user.is_authenticated %}
+                <p class="search_panel_login_text">
+                    {{ user.first_name|default:user.username }}님 환영합니다!!
+                </p>
+                <div class="search_panel_logout_button" onclick="location.href='{% url 'logout' %}'">
+                    로그아웃
+                </div>
+            {% else %}
+                <div class="search_panel_login_button" onclick="changePanel('login')">로그인</div>
+                <div class="search_panel_register_button" onclick="changePanel('register')">
+                    회원가입
+                </div>
+            {% endif %}
+        </div>
     </section>
     <section class="search_panel_header">
         <div class="community_button" onclick="changePanel('board')">게시판</div>
         <input type="text" class="search" id="search_input" placeholder="검색어">
-        <img src="../../static/img/search.svg" class="search_button">
+        <img src="../../static/img/search.svg" class="search_img_button">
     </section>
     <section class="search_panel_filter_case">
         <img src="../../static/img/restaurant.png" class="search_panel_filter" onclick="onFilterClick('restaurant', this)">

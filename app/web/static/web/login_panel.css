@@ -4,6 +4,7 @@
 .login_panel {
     display: flex;
     justify-content: center;
+    padding: 10px;
 }
 
 /* 로그인 전체 래퍼 */
