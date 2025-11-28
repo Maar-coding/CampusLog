@@ -238,23 +238,33 @@
             changePanel(panelName, id);          // 내부 내용 교체
         }
 
-        // 패널 내용 교체
         function changePanel(panelName, id = null) {
-            const panel = document.getElementById("panel");
+            // 게시글 쓰기 버튼 클릭 시 로그인 체크
+            if (panelName === 'board/write') {
+                // 쿠키에서 sessionid 확인 (Django 세션 쿠키)
+                const isLoggedIn = document.cookie.split(';').some(cookie =>
+                    cookie.trim().startsWith('sessionid=')
+                );
 
-            currentPanel = panelName;      
+                if (!isLoggedIn) {
+                    alert('로그인이 필요합니다!');
+                    changePanel('login');  // ← 패널 내에서 로그인 화면 열기
+                    return;
+                }
+            }
+
+            const panel = document.getElementById('panel');
+            currentPanel = panelName;
             currentId = id;
 
-            // id가 있으면 무조건 localStorage 저장 (업데이트됨. 절대 쌓이지 않음)
-            if (id !== null) {
-                localStorage.setItem("lastRestaurantId", id);
-                console.log("localStorage 저장:", id);
+            if (id) {
+                localStorage.setItem('lastRestaurantId', id);
             }
 
             let url = `/${panelName}`;
 
-            // restaurant 패널이면 /restaurant/3 형태로
-            if (panelName === "restaurant" && id) {
+            // restaurant 예외 처리
+            if (panelName === 'restaurant' && id) {
                 url = `/${panelName}/${id}`;
             }
 
@@ -264,7 +274,7 @@
                     panel.innerHTML = html;
                     initPanelByName(panelName, id);
                 })
-                .catch(err => console.error(`${panelName}_panel.html 로딩 실패`, err));
+                .catch(err => console.error(err));
         }
 
         
