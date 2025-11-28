@@ -35,7 +35,7 @@
 
     <script>
         // 전역변수 선언
-        const IS_AUTHENTICATED = {{ user.is_authenticated|lower }};
+        let IS_AUTHENTICATED = {{ user.is_authenticated|lower }};
         let map;
         let myMarker;
         const myImageSrc = "../../static/img/my_marker.svg"; // 내 마커 이미지
@@ -536,22 +536,21 @@
 
         // 로그인 폼 AJAX 제출 + 실패 시 패널 안에서만 갱신 + 성공 시 팝업 후 search 패널로 이동
         function handleLoginSubmit(event) {
-            event.preventDefault();  // 기본 폼 전송 막기
-
+            event.preventDefault();
             const form = event.target;
             const formData = new FormData(form);
 
             fetch(form.action, {
-                method: form.method || "POST",
+                method: form.method, // POST
                 body: formData,
                 headers: {
-                    "X-Requested-With": "XMLHttpRequest"
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
-                redirect: "follow"   // 기본값이지만 명시
+                redirect: 'follow'
             })
-                    .then(async (res) => {
-                        const html = await res.text();      // 응답 전체를 문자열로
-                        const panel = document.getElementById("panel");
+            .then(async res => {
+                const html = await res.text();
+                const panel = document.getElementById('panel');
 
                         // 🔹 1) 진짜 서버 오류 (500 등)
                         if (!res.ok && !res.redirected) {
@@ -579,6 +578,7 @@
                         }
 
                         // 🔹 3) 여기까지 왔으면 = 대부분 "로그인 성공" (리다이렉트가 있었던 경우)
+                        IS_AUTHENTICATED = true;
                         openPopup("로그인에 성공하였습니다!", () => {
                             // 팝업의 확인 버튼을 누르면, 패널 내용만 search 패널로 교체
                             changePanel("search");
