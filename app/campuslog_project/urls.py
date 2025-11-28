@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from web import views as web_views  # web 앱의 signup 뷰를 가져오기 위해
+from web.views.auth_view import logout_view
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -17,7 +18,7 @@ urlpatterns = [
     path('register', web_views.register, name='register'),  # 명세서의 /register와 일치
 
     # POST /logout
-    path('logout', auth_views.LogoutView.as_view(), name='logout'),
+    path('logout', logout_view, name='logout'),
 
     # 3. 나머지 모든 웹 기능
     # '/' (메인), '/search', '/restaurant/', '/board/', '/api/' 등...

@@ -43,7 +43,13 @@
 
         const markers = [];
 
-        // HTMl이 로드 된 다음에 실행 (카카오맵 불러올 때 오류 제거)
+
+    // 로그아웃 함수 추가 (여기!)
+    function logout() {
+        window.location.href = '/logout';
+    }
+
+       // HTMl이 로드 된 다음에 실행 (카카오맵 불러올 때 오류 제거)
         document.addEventListener('DOMContentLoaded', function () {
 
             const imageSize = new kakao.maps.Size(44, 66); // 마커 이미지 크기 (가로, 세로)
