@@ -6,11 +6,11 @@ from . import views
 urlpatterns = [
     # 1. 메인 페이지 및 검색
     path('', views.index, name='index'),  # GET /
-    path('search_panel', views.search_page, name='search_panel'),  # GET /search
+    path('search', views.search_page, name='search_panel'),  # GET /search
 
     path('test', views.test_page, name='test'),
     path('start', views.start_page, name='start'),
-    path('board', views.board,name='board'),
+    path('board',views.board,name='board'),
     path('register', views.register, name='register'),
     # 2. 식당 및 리뷰 (명세서 기반)
     # {id} -> <int:id>
