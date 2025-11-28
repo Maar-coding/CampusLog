@@ -1,13 +1,7 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import get_user_model, logout
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 
-def logout_view(request):
-    """
-    GET/POST 모두 허용하는 로그아웃 뷰
-    """
-    logout(request)
-    return redirect('/')  # 메인 페이지로 리다이렉트
 
 def register(request):
     if request.method == 'POST':
