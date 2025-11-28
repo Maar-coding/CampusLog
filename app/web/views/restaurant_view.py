@@ -207,29 +207,25 @@ def restaurant_reviews(request, id):
 
 @login_required
 def review_write_form(request, id):
-    """
-    GET/POST /restaurant/{id}/reviews/write : 리뷰 작성
-    - 로그인한 사용자만 접근 가능
-    """
     restaurant = get_object_or_404(Restaurant, pk=id)
 
     if request.method == 'POST':
-        form = ReviewForm(request.POST, request.FILES)
-
+        form = ReviewForm(request.POST, request.FILES)  # 이미지 포함
         if form.is_valid():
             review = form.save(commit=False)
-            review.author = request.user
             review.restaurant = restaurant
+            review.author = request.user
             review.save()
 
-            # 성공 시 리뷰 목록으로 바로 리다이렉트
-            messages.success(request, "리뷰가 성공적으로 작성되었습니다!")
-            return redirect('restaurant_reviews', id=id)
+            # ⭐ [수정] 성공 시 JSON 응답 반환
+            return JsonResponse({'status': 'success', 'message': '리뷰가 등록되었습니다.'})
+        else:
+            # 실패 시 에러 메시지를 포함한 HTML을 다시 렌더링하거나,
+            # JSON으로 에러를 보낼 수도 있습니다. 여기선 간단히 폼 에러 반환.
+            return JsonResponse({'status': 'fail', 'errors': form.errors}, status=400)
+
     else:
         form = ReviewForm()
 
-    context = {
-        'form': form,
-        'restaurant': restaurant
-    }
+    context = {'form': form, 'restaurant': restaurant}
     return render(request, 'web/reviews_write_form.html', context)

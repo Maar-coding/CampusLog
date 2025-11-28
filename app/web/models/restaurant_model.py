@@ -141,6 +141,7 @@ class Post(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    images = models.ImageField(upload_to='board', null=True, blank=True)
 
     def __str__(self):
         return f"{self.title} (작성자: {self.author.username})"

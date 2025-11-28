@@ -1,41 +1,165 @@
-<!-- 왼쪽 패널 영역 (이 div 안에 코딩하기) -->
+{% load static %}
+
 <div class="panel_case">
     <div class="board_container">
-        <!-- 뒤로가기 버튼과 게시판 헤더 -->
         <div class="board_header">
             <div class="header_left">
+                <!-- 뒤로가기 버튼 -->
                 <button class="back_button" onclick="changePanel('search')">
                     <span class="back_arrow">←</span>
                 </button>
-                <h1 class="board_title">커뮤니티 게시판</h1>
+                <h1 class="board_title">게시판</h1>
             </div>
         </div>
 
-        <!-- 검색 영역 -->
-        <div class="search_area">
-            <input type="text" class="search_input" placeholder="제목, 내용으로 검색" id="searchInput">
-            <button class="search_button" onclick="searchPosts()">검색</button>
-        </div>
+        <div class="board_list" id="boardList">
+            {% if posts %}
+                {% for post in posts %}
+                    <!-- 클릭 시 내용 확장/축소 -->
+                    <div class="post_item" onclick="togglePostExpand(this, {{ post.id }})">
+                        <div class="post_header">
+                            <div class="post_header_left">
+                                <h3 class="post_title">
+                                    {{ post.title }}
+                                </h3>
+                            </div>
+                            <div class="post_header_right">
+                                <span class="post_date">
+                                    {{ post.created_at|date:"Y.m.d H:i" }}
+                                </span>
+                                <!-- 메뉴 버튼 (본인 글일 경우 삭제 등) -->
+                                {% if request.user == post.author %}
+                                <button class="post_menu_button" onclick="togglePostMenu({{ post.id }}, event)">
+                                    <span class="post_menu_dots">⋮</span>
+                                </button>
+                                <div class="post_menu_dropdown" id="postMenu{{ post.id }}" style="display: none;">
+                                    <button class="menu_item" style="color:red;" onclick="deletePost({{ post.id }})">삭제하기</button>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
 
-        <!-- 게시글 목록 -->
-        <div class="post_list" id="postList">
-            <!-- 로딩 상태 -->
-            <div class="loading" id="loading">
-                게시글을 불러오는 중...
-            </div>
+                        <div class="post_content_area">
+                            <p class="post_content" id="postContent{{ post.id }}">
+                                {{ post.content|linebreaksbr }}
+                            </p>
+                            <!-- 이미지가 있으면 아이콘 표시 -->
+                            {% if post.images %}
+                                <span class="image_indicator" id="postImageIndicator{{ post.id }}">🖼️</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- 확장 시 보여질 이미지 -->
+                        <div class="post_images" id="postImages{{ post.id }}" style="display: none;">
+                            {% if post.images %}
+                                <img src="{{ post.images.url }}" alt="게시글 이미지" class="post_image">
+                            {% endif %}
+                        </div>
+
+                        <div class="post_meta">
+                            <div class="post_meta_left">
+                                <span class="post_author">
+                                    {{ post.author.username }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty_state">
+                    <div class="empty_state_text">아직 작성된 게시글이 없습니다.</div>
+                    <div class="empty_state_text">자유롭게 이야기를 나눠보세요!</div>
+                </div>
+            {% endif %}
         </div>
 
         <!-- 페이지네이션 -->
-        <div class="pagination" id="pagination" style="display: none;">
-            <button class="page_button" onclick="changePage('prev')" id="prevBtn">‹</button>
-            <div id="pageNumbers"></div>
-            <button class="page_button" onclick="changePage('next')" id="nextBtn">›</button>
-        </div>
+        {% if is_paginated %}
+        <div class="pagination" id="pagination">
+            {% if page_obj.has_previous %}
+                <button class="page_button" onclick="changePanel('board', '?page={{ page_obj.previous_page_number }}')">‹</button>
+            {% else %}
+                <button class="page_button" disabled>‹</button>
+            {% endif %}
 
-        <!-- 글쓰기 버튼 (오른쪽 아래 고정) -->
+            <div id="pageNumbers">
+                {% for num in paginator.page_range %}
+                    {% if num == page_obj.number %}
+                        <button class="page_button active">{{ num }}</button>
+                    {% else %}
+                        <button class="page_button" onclick="changePanel('board', '?page={{ num }}')">{{ num }}</button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {% if page_obj.has_next %}
+                <button class="page_button" onclick="changePanel('board', '?page={{ page_obj.next_page_number }}')">›</button>
+            {% else %}
+                <button class="page_button" disabled>›</button>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- 글쓰기 버튼 -->
         <button class="floating_write_button" onclick="changePanel('board/write')">
             <span class="write_icon">✏️</span>
-            <span class="write_text">게시글 쓰기</span>
+            <span class="write_text">글쓰기</span>
         </button>
     </div>
 </div>
+
+<script>
+    // 1. 게시글 확장/축소 토글 (클래스명 수정됨: .post_content)
+    function togglePostExpand(element, postId) {
+        const content = element.querySelector('.post_content');
+        const images = document.getElementById('postImages' + postId);
+        const indicator = document.getElementById('postImageIndicator' + postId);
+
+        const isExpanded = element.classList.contains('expanded');
+
+        if (isExpanded) {
+            element.classList.remove('expanded');
+            // CSS(.post_item:not(.expanded) .post_content)에서 line-clamp 처리됨
+            if(images) images.style.display = 'none';
+            if(indicator) indicator.style.display = 'inline';
+        } else {
+            element.classList.add('expanded');
+            if(images) images.style.display = 'block';
+            if(indicator) indicator.style.display = 'none';
+        }
+    }
+
+    // 2. 메뉴 토글
+    function togglePostMenu(postId, event) {
+        event.stopPropagation();
+        const menu = document.getElementById('postMenu' + postId);
+
+        document.querySelectorAll('.post_menu_dropdown').forEach(m => {
+            if(m !== menu) m.style.display = 'none';
+        });
+
+        if (menu.style.display === 'block') {
+            menu.style.display = 'none';
+        } else {
+            menu.style.display = 'block';
+        }
+    }
+
+    // 3. 삭제 기능
+    function deletePost(postId) {
+        event.stopPropagation();
+        if(confirm("정말 삭제하시겠습니까?")) {
+            // TODO: 삭제 API 호출 (fetch)
+            alert("삭제 기능은 백엔드 구현이 필요합니다.");
+        }
+    }
+
+    // 메뉴 외부 클릭 시 닫기
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.post_menu_button')) {
+            document.querySelectorAll('.post_menu_dropdown').forEach(m => {
+                m.style.display = 'none';
+            });
+        }
+    });
+</script>

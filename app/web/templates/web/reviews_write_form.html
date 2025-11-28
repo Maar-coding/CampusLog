@@ -1,54 +1,109 @@
-<!-- 왼쪽 패널 영역 (이 div 안에 코딩하기) -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리뷰 작성 - {{ restaurant.name }}</title>
+    <style>
+        /* 기존 스타일 재사용 (base.html로 공통화하면 좋습니다) */
+        body { font-family: -apple-system, sans-serif; background-color: #f8f9fa; color: #333; padding: 20px; }
+        .panel_case { max-width: 600px; margin: 0 auto; background-color: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .restaurant_inner { padding: 24px; }
+        .section_title { font-size: 1.5rem; font-weight: 600; margin-bottom: 10px; }
+        .sub_title { font-size: 1rem; color: #666; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;}
+
+        .form_group { margin-bottom: 20px; }
+        .form_group label { display: block; font-weight: 600; margin-bottom: 8px; color: #555; }
+
+        /* 폼 위젯(forms.py)에서 설정한 class='form-control'에 대한 스타일 */
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box; /* 패딩 포함 너비 계산 */
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus { border-color: #2f80ed; outline: none; }
+
+        /* 별점 등 숫자 입력칸 너비 조정 */
+        input[type="number"].form-control { width: 100px; }
+
+        /* 파일 입력칸 스타일 */
+        input[type="file"].form-control { padding: 8px; }
+
+        .submit_btn {
+            display: block; width: 100%; padding: 14px;
+            background-color: #2f80ed; color: #fff;
+            border: none; border-radius: 6px;
+            font-size: 1.1rem; font-weight: 600;
+            cursor: pointer; margin-top: 30px;
+        }
+        .submit_btn:hover { background-color: #1c68c9; }
+
+        .error_msg { color: #e53935; font-size: 0.9rem; margin-top: 5px; }
+        .help_text { color: #888; font-size: 0.85rem; margin-top: 5px; }
+
+        .back_link { display: block; margin-top: 20px; text-align: center; color: #666; text-decoration: none; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
 <div class="panel_case">
-    <div class="upload_container">
-        <div class="upload_header">
-            <div class="header_left">
-                <button class="back_button" onclick="changePanel('restaurant/{{ restaurant.id }}/reviews')">
-                    <span class="back_arrow">←</span>
-                </button>
-                <h1 class="upload_title">후기 작성</h1>
-            </div>
-        </div>
+    <div class="restaurant_inner">
+        <h3 class="section_title">리뷰 작성</h3>
+        <p class="sub_title"><strong>{{ restaurant.name }}</strong>의 방문 후기를 남겨주세요.</p>
 
-        <form class="upload_form" id="reviewForm">
-            <div class="form_group">
-                <label class="form_label">제목</label>
-                <input type="text" class="form_input" id="reviewTitle" placeholder="후기 제목을 입력하세요" required>
-            </div>
+        <form method="POST" enctype="multipart/form-data" id="reviewForm" action="{% url 'review_write_form' restaurant.id %}">
+            {% csrf_token %}
 
             <div class="form_group">
-                <label class="form_label">별점</label>
-                <div class="rating_input">
-                    <span class="rating_star" data-rating="1">★</span>
-                    <span class="rating_star" data-rating="2">★</span>
-                    <span class="rating_star" data-rating="3">★</span>
-                    <span class="rating_star" data-rating="4">★</span>
-                    <span class="rating_star" data-rating="5">★</span>
-                    <span class="rating_text" id="ratingText">별점을 선택하세요</span>
-                </div>
+                <label for="{{ form.title.id_for_label }}">제목</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <div class="error_msg">{{ form.title.errors.0 }}</div>
+                {% endif %}
             </div>
 
             <div class="form_group">
-                <label class="form_label">후기 내용</label>
-                <textarea class="form_textarea" id="reviewContent" placeholder="후기 내용을 입력하세요" required></textarea>
+                <label for="{{ form.rating.id_for_label }}">별점 (1~5)</label>
+                {{ form.rating }}
+                {% if form.rating.errors %}
+                    <div class="error_msg">{{ form.rating.errors.0 }}</div>
+                {% endif %}
             </div>
 
             <div class="form_group">
-                <label class="form_label">사진 첨부</label>
-                <div class="file_upload_area">
-                    <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
-                    <button type="button" class="file_upload_button" onclick="document.getElementById('imageInput').click()">
-                        <span class="upload_icon">📷</span>
-                        <span class="upload_text">사진 선택</span>
-                    </button>
-                    <div class="file_preview" id="imagePreview"></div>
-                </div>
+                <label for="{{ form.content.id_for_label }}">내용</label>
+                {{ form.content }}
+                {% if form.content.errors %}
+                    <div class="error_msg">{{ form.content.errors.0 }}</div>
+                {% endif %}
             </div>
 
-            <div class="form_buttons">
-                <button type="button" class="btn btn_cancel" onclick="changePanel('restaurant/{{ restaurant.id }}/reviews')">취소</button>
-                <button type="submit" class="btn btn_submit">후기 등록</button>
+            <div class="form_group">
+                <label for="{{ form.image.id_for_label }}">사진 첨부 (선택)</label>
+
+                {{ form.image }}
+
+                {% if form.image.errors %}
+                    <div class="error_msg">{{ form.image.errors.0 }}</div>
+                {% endif %}
+
+                <p class="help_text">
+                    * 맛있는 음식 사진이나 식당 분위기를 찍어 올려주세요.<br>
+                    * jpg, png, jpeg 파일만 업로드 가능합니다.
+                </p>
             </div>
+
+            <button type="submit" class="submit_btn">리뷰 등록 완료</button>
         </form>
+
+        <a href="#" onclick="changePanel('search')" class="back_link">취소하고 돌아가기</a>
     </div>
+
 </div>
+
+</body>
+</html>

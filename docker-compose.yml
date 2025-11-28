@@ -6,6 +6,7 @@ services:
     command: python check_db.py
     volumes:
       - ./app:/app
+      - ./app/media:/app/media
     ports:
       - "8000:8000"
     environment:

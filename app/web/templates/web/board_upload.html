@@ -1,153 +1,70 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="../../static/web/board.css">
-</head>
-<body>
-
-<!-- 왼쪽 패널 영역 (이 div 안에 코딩하기) -->
 <div class="panel_case">
     <div class="board_container">
-        <!-- 뒤로가기 버튼과 게시판 헤더 -->
+        <!-- 헤더 -->
         <div class="board_header" id="boardHeader">
             <div class="header_left">
-                <button class="back_button" onclick="changePanel('board/list')">
+                <!-- 뒤로가기: 목록으로 이동 -->
+                <button class="back_button" onclick="changePanel('board')">
                     <span class="back_arrow">←</span>
                 </button>
                 <h1 class="board_title">게시글 작성</h1>
             </div>
         </div>
 
-        <!-- 업로드 성공 화면 -->
+        <!-- 성공 화면 (숨김 상태) -->
         <div class="upload_success_container" id="successContainer" style="display: none;">
             <div class="success_content">
                 <div class="success_icon">✓</div>
-                <h2 class="success_title">게시글이 성공적으로 업로드 되었습니다</h2>
+                <h2 class="success_title">게시글이 성공적으로<br>등록되었습니다!</h2>
             </div>
             <div class="success_buttons">
-                <button class="btn btn_primary" onclick="viewPost()">게시글 보기</button>
-                <button class="btn btn_secondary" onclick="goToList()">목록으로</button>
+                <!-- 작성된 글로 이동 (JS에서 id 채워줌) -->
+                <button class="btn btn_primary" id="btnViewPost">게시글 보기</button>
+                <button class="btn btn_secondary" onclick="changePanel('board')">목록으로</button>
             </div>
         </div>
 
-        <!-- 게시글 작성 폼 -->
-        <form class="post_form" id="postForm">
-            <!-- 제목 입력 -->
+        <!-- 작성 폼 -->
+        <!-- id="postForm"은 JS에서 이벤트를 연결할 때 사용합니다 -->
+        <form class="post_form" id="postForm" action="{% url 'board/write' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- 제목 -->
             <div class="form_group">
                 <label for="postTitle" class="form_label">제목</label>
-                <input type="text" id="postTitle" class="form_input" placeholder="제목을 입력하세요" required>
+                <!-- name="title" 필수 -->
+                <input type="text" id="postTitle" name="title" class="form_input" placeholder="제목을 입력하세요" required>
             </div>
 
-            <!-- 내용 입력 -->
+            <!-- 내용 -->
             <div class="form_group">
                 <label for="postContent" class="form_label">내용</label>
-                <textarea id="postContent" class="form_textarea" placeholder="내용을 입력하세요" required></textarea>
+                <!-- name="content" 필수 -->
+                <textarea id="postContent" name="content" class="form_textarea" placeholder="내용을 입력하세요" required></textarea>
             </div>
 
             <!-- 사진 첨부 -->
             <div class="form_group">
                 <label class="form_label">사진 첨부</label>
                 <div class="file_upload_area">
-                    <input type="file" id="imageUpload" accept="image/*" multiple style="display: none;">
+                    <!-- name="images" 필수. 모델이 ImageField(단일)이므로 multiple 제거 -->
+                    <input type="file" id="imageUpload" name="images" accept="image/*" style="display: none;">
+
                     <button type="button" class="file_upload_button" onclick="document.getElementById('imageUpload').click()">
                         <span class="upload_icon">🖼️</span>
-                        사진 첨부
+                        사진 선택
                     </button>
+
+                    <!-- 미리보기 영역 -->
                     <div class="file_preview" id="filePreview"></div>
                 </div>
             </div>
 
-            <!-- 버튼 영역 -->
+            <!-- 버튼 -->
             <div class="form_buttons">
-                <button type="button" class="btn btn_cancel" onclick="changePanel('board/list')">취소</button>
+                <button type="button" class="btn btn_cancel" onclick="changePanel('board')">취소</button>
                 <button type="submit" class="btn btn_submit">업로드</button>
             </div>
         </form>
     </div>
 </div>
-
-<script>
-// 파일 업로드 미리보기
-document.getElementById('imageUpload').addEventListener('change', function(e) {
-    const files = e.target.files;
-    const preview = document.getElementById('filePreview');
-    preview.innerHTML = '';
-
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imageDiv = document.createElement('div');
-                imageDiv.className = 'preview_image';
-                imageDiv.innerHTML = `
-                    <img src="${e.target.result}" alt="미리보기">
-                    <button type="button" class="remove_image" onclick="removeImage(this)">×</button>
-                `;
-                preview.appendChild(imageDiv);
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-});
-
-// 이미지 제거
-function removeImage(button) {
-    button.parentElement.remove();
-}
-
-// 게시글 제출
-document.getElementById('postForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const title = document.getElementById('postTitle').value.trim();
-    const content = document.getElementById('postContent').value.trim();
-
-    if (!title || !content) {
-        alert('제목과 내용을 모두 입력해주세요.');
-        return;
-    }
-
-    // 실제 구현에서는 서버로 데이터 전송
-    console.log('게시글 제출:', { title, content });
-
-    // 성공 화면 표시
-    showSuccessScreen();
-});
-
-// 취소 기능
-function cancelPost() {
-    if (confirm('작성 중인 내용이 사라집니다. 정말 취소하시겠습니까?')) {
-        goBack();
-    }
-}
-
-// 성공 화면 표시
-function showSuccessScreen() {
-    document.getElementById('boardHeader').style.display = 'none';
-    document.getElementById('postForm').style.display = 'none';
-    document.getElementById('successContainer').style.display = 'block';
-}
-
-// 게시글 보기
-function viewPost() {
-    // 실제로는 작성된 게시글 상세 페이지로 이동
-    console.log('게시글 보기');
-    goBack();
-}
-
-// 목록으로 이동
-function goToList() {
-    goBack();
-}
-
-// 뒤로가기 기능
-function goBack() {
-    window.history.back();
-}
-</script>
-
-</body>
-</html>
