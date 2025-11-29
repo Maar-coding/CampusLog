@@ -190,9 +190,10 @@
 .search_panel_filter_case {
   display: flex;
   align-items: center;
-  gap: 12px; /* 아이콘 사이 간격 */
+  gap: 12px;
   margin-bottom: 28px;
-  padding-bottom: 4px; /* 그림자 잘림 방지 */
+  padding-bottom: 4px;
+  position: relative
 }
 
 /* ★ 중요: 필터 아이콘 (이미지 태그 스타일링) */
@@ -223,7 +224,8 @@
   padding: 6px 10px;
   border-radius: 6px;
   transition: background 0.2s;
-}
+  position: relative;
+  }
 
 .sort_dropdown_button:hover {
   background-color: #f3f4f6;
@@ -238,9 +240,11 @@
 
 /* 드롭다운 메뉴 (숨김/표시는 JS 제어) */
 .sort_dropdown_menu {
-  display: none; /* active 클래스 추가 시 display: block */
+  display: none;
   position: absolute;
-  /* 위치는 부모 relative 기준 혹은 JS로 조정 필요 */
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -248,8 +252,22 @@
   padding: 8px;
   list-style: none;
   z-index: 100;
+  min-width: 120px;
 }
 
+.sort_dropdown_menu.open {
+  display: block !important;
+}
+
+.dropdown_list {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.dropdown_list:hover {
+  background-color: #f3f4f6;
+}
 
 /* =========================================
    4. 식당 리스트 (카드 디자인)

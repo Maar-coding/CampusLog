@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8" />
     <title>CampusLog</title>
-    <!-- 패널의 css파일 연동 모두 여기서 하기 -->
     <link rel="stylesheet" href="../../static/web/style.css"/>
     <link rel="stylesheet" href="../../static/web/component.css"/>
     <link rel="stylesheet" href="../../static/web/search_panel.css"/>
@@ -13,8 +12,7 @@
     <link rel="stylesheet" href="../../static/web/reviews_panel.css">
     <link rel="stylesheet" href="../../static/web/reviews_write_panel.css">
     <link rel="stylesheet" href="../../static/web/board.css">
-    <!-- 카카오 Maps API 불러오기 (이동하 개인 키 값) -->
-     <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=8d908fe0cb6e1d79f77f01659a40a83e&libraries=services"></script>
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=8d908fe0cb6e1d79f77f01659a40a83e&libraries=services"></script>
 </head>
 
 <body>
@@ -30,47 +28,39 @@
         <img src="../../static/img/right_arrow.svg" class="panel_arrow">
     </div>
 
-    <!-- 기본 패널 (component.css) -->
     <aside id="panel" style="display: none;"></aside>
 
     <div id="globalPopup" class="popup_overlay" style="display:none;">
         <div class="popup_box">
-            <p class="popup_message" id="globalPopupMessage">
-                알림 내용
-            </p>
+            <p class="popup_message" id="globalPopupMessage">알림 내용</p>
             <div class="popup_buttons">
-                <button type="button" class="btn btn_primary" id="globalPopupConfirm">
-                    확인
-                </button>
+                <button type="button" class="btn btn_primary" id="globalPopupConfirm">확인</button>
             </div>
         </div>
     </div>
 
-
     <script>
-        // 전역변수 선언
+        // 전역변수
         let IS_AUTHENTICATED = {{ user.is_authenticated|lower }};
-        let map;
-        let myMarker;
-        const myImageSrc = "../../static/img/my_marker.svg"; // 내 마커 이미지
+        let map, myMarker;
+        const myImageSrc = "../../static/img/my_marker.svg";
         const markers = [];
-        let storeData = []; // 전역변수로 이동 (데이터 로드 시점 문제 해결)
+        let storeData = [];
+        let currentPanelFilter = null;
+        let currentFilter = null;
+        let currentPanel = "search";
 
-        // HTML이 로드 된 다음에 실행
+        // 지도 초기화
         document.addEventListener('DOMContentLoaded', function () {
-
             const imageSize = new kakao.maps.Size(44, 66);
             const myMarkerImage = new kakao.maps.MarkerImage(myImageSrc, imageSize);
 
-            // 지도 초기화
             function initMap(lat, lng) {
                 const mapContainer = document.getElementById('map');
-                const mapOption = {
+                map = new kakao.maps.Map(mapContainer, {
                     center: new kakao.maps.LatLng(lat, lng),
                     level: 3
-                };
-
-                map = new kakao.maps.Map(mapContainer, mapOption);
+                });
 
                 myMarker = new kakao.maps.Marker({
                     position: new kakao.maps.LatLng(lat, lng),
@@ -78,52 +68,45 @@
                     image: myMarkerImage
                 });
 
-                // 매장 마커 리스트 로드
                 loadRestaurantDataFromDB();
             }
 
-            // 내 위치 가져오기
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function (position) {
-                    initMap(position.coords.latitude, position.coords.longitude);
-                }, function (error) {
-                    alert('위치 접근 실패 (매화소 공원으로 위치를 설정합니다.)');
-                    initMap(37.2787235583201, 127.910148105052);
-                });
+                navigator.geolocation.getCurrentPosition(
+                    pos => initMap(pos.coords.latitude, pos.coords.longitude),
+                    () => {
+                        alert('위치 접근 실패 (매화소 공원으로 위치를 설정합니다.)');
+                        initMap(37.2787235583201, 127.910148105052);
+                    }
+                );
             } else {
                 alert('이 브라우저는 위치 정보를 지원하지 않습니다.');
-                initMap(127.910148105052, 127.910148105052);
+                initMap(37.2787235583201, 127.910148105052);
             }
 
-            // 페이지 로드되면 패널 열기 (함수 호출 위치 이동)
             panelButton();
         });
 
-        // 유저 좌표 받아오기 (지도 생성 후 실행되도록 수정 권장하나 원본 유지)
+        // 유저 위치 로드
         fetch('/api/locations')
-        .then(res => res.json())
-        .then(data => {
-            if(map) { // 지도가 있을 때만
-                data.forEach(user => {
-                    new kakao.maps.Marker({
-                        map: map,
-                        position: new kakao.maps.LatLng(user.lat, user.lng),
+            .then(res => res.json())
+            .then(data => {
+                if(map) {
+                    data.forEach(user => {
+                        new kakao.maps.Marker({
+                            map: map,
+                            position: new kakao.maps.LatLng(user.lat, user.lng),
+                        });
                     });
-                });
-            }
-        })
-        .catch(err => console.log("유저 위치 로드 패스"));
+                }
+            })
+            .catch(err => console.log("유저 위치 로드 패스"));
 
-
-        // 매장 마커 관련 코드
-        let currentFilter = null;
-
+        // 마커 생성
         function createMarker(lat, lng, tags, id) {
             const el = document.createElement("div");
             el.className = "store_marker";
-
-            const imgSrc = getMarkerImage(tags);
-            el.innerHTML = `<img src="${imgSrc}" class="store_marker_img">`;
+            el.innerHTML = `<img src="${getMarkerImage(tags)}" class="store_marker_img">`;
 
             const overlay = new kakao.maps.CustomOverlay({
                 position: new kakao.maps.LatLng(lat, lng),
@@ -132,28 +115,22 @@
             });
 
             overlay.tags = tags;
-            overlay.tags = tags;
             overlay.el = el;
 
             el.addEventListener("click", (e) => {
                 e.stopPropagation();
-
-                const panelName = `restaurant`; // id는 changePanel에 넘김
-
-                // 패널 UI 열기
                 const panel = document.getElementById("panel");
-                const btn   = document.querySelector(".panel_button");
-                const img   = document.querySelector(".panel_arrow");
+                const btn = document.querySelector(".panel_button");
+                const img = document.querySelector(".panel_arrow");
 
                 panel.style.display = "block";
                 if (btn) btn.classList.add("open");
                 if (img) img.style.transform = "scaleX(-1)";
 
-                openPanel(panelName, id);
+                openPanel("restaurant", id);
             });
 
             markers.push(overlay);
-            return overlay;
         }
 
         function getMarkerImage(tags) {
@@ -183,20 +160,15 @@
         }
 
         function clearFilter() {
-            markers.forEach(marker => {
-                marker.el.classList.remove("marker_blur");
-            });
+            markers.forEach(marker => marker.el.classList.remove("marker_blur"));
         }
 
-        // 필터 아이콘 클릭 이벤트
+        // 지도 필터 아이콘 클릭
         document.getElementById("restaurant").addEventListener("click", () => toggleFilter("restaurant"));
         document.getElementById("cafe").addEventListener("click", () => toggleFilter("cafe"));
         document.getElementById("play").addEventListener("click", () => toggleFilter("play"));
 
-
-        // 패널 관련 JS
-        let currentPanel = "search";
-
+        // 패널 관련
         function panelButton() {
             const btn = document.querySelector('.panel_button');
             const img = document.querySelector('.panel_arrow');
@@ -214,8 +186,6 @@
                 if (currentPanel === "restaurant" || currentPanel === "restaurant_reviews") {
                     id = localStorage.getItem("lastRestaurantId");
                 }
-                // (선택사항) 게시판도 페이지 번호를 기억하고 싶다면 로직 추가 가능
-                // else if (currentPanel === "board") { ... }
                 openPanel(currentPanel, id);
             }
         }
@@ -227,14 +197,12 @@
         }
 
         function changePanel(panelName, id = null) {
-            // ⭐ 게시글 쓰기 시 로그인 체크 (쿠키 대신 IS_AUTHENTICATED 사용)
             if (panelName === 'board/write' && !IS_AUTHENTICATED) {
                 openPopup('로그인이 필요합니다!');
                 changePanel('login');
                 return;
             }
 
-            // ⭐ 리뷰 쓰기도 체크
             if (panelName.includes('reviews/write') && !IS_AUTHENTICATED) {
                 openPopup('로그인이 필요합니다!');
                 changePanel('login');
@@ -253,11 +221,7 @@
             else if (panelName === "restaurant_reviews" && id) url = `/restaurant/${id}/reviews`;
             else if (panelName === "board") {
                 if (id) {
-                    if (!isNaN(id)) {
-                        url = `/board/${id}`;
-                    } else {
-                        url = `/board${id}`;
-                    }
+                    url = !isNaN(id) ? `/board/${id}` : `/board${id}`;
                 }
             }
 
@@ -270,35 +234,39 @@
                 .catch(err => console.error(`${panelName} 로딩 실패`, err));
         }
 
-
-
         function initPanelByName(panelName, id) {
             if (panelName === "search") {
-                // 데이터가 있으면 바로 그림
                 if (storeData.length > 0) {
                     renderStoreList(storeData);
                 }
                 initSortDropdown();
-                initSearchPanel(); // 이벤트 리스너 연결
+                initSearchPanel();
             }
             else if (panelName.includes("reviews/write")) {
-                const parts = panelName.split('/'); // ['restaurant', '3', 'reviews', 'write']
-                const restaurantId = parts[1];      // '3'
-
+                const parts = panelName.split('/');
+                const restaurantId = parts[1];
                 bindReviewFormEvent(restaurantId);
             }
             else if (panelName === "board/write") {
-                console.log("게시글 작성 패널 감지됨!"); // [디버깅]
                 bindPostFormEvent();
             }
         }
 
-        // search_panel.html 관련 함수
+        // ⭐ 패널 필터 클릭
         function onFilterClick(tag, clickedEl) {
-            loadStores(tag); // 내부 필터링
-
-            // 블러 처리
+            console.log("필터 클릭:", tag); // 디버깅
             const filters = document.querySelectorAll('.search_panel_filter');
+
+            if (currentPanelFilter === tag) {
+                currentPanelFilter = null;
+                renderStoreList(storeData);
+                filters.forEach(img => img.classList.remove('blurred-filter'));
+                return;
+            }
+
+            currentPanelFilter = tag;
+            loadStores(tag);
+
             filters.forEach(img => {
                 if (img === clickedEl) img.classList.remove('blurred-filter');
                 else img.classList.add('blurred-filter');
@@ -308,6 +276,7 @@
         function loadStores(tag) {
             if (!storeData || storeData.length === 0) return;
             const filtered = storeData.filter(store => store.tags.includes(tag));
+            console.log("필터링 결과:", filtered); // 디버깅
             renderStoreList(filtered);
         }
 
@@ -315,28 +284,205 @@
             const button = document.getElementById("sort_dropdown_button");
             const menu = document.getElementById("sort_dropdown_menu");
 
-            if (!button || !menu) return;
+            if (!button || !menu) {
+                console.log("드롭다운 요소 없음");
+                return;
+            }
+
+            console.log("드롭다운 초기화 성공");
+
+            // ⭐ 복제 대신 직접 이벤트 제거
+            button.replaceWith(button.cloneNode(true));
+            const newButton = document.getElementById("sort_dropdown_button");
 
             const items = menu.querySelectorAll(".dropdown_list");
 
-            button.addEventListener("click", (e) => {
+            // ⭐ 버튼 클릭 이벤트
+            newButton.addEventListener("click", function(e) {
+                e.preventDefault();
                 e.stopPropagation();
+                console.log("드롭다운 버튼 클릭!");
                 menu.classList.toggle("open");
             });
 
+            // ⭐ 항목 클릭 이벤트
             items.forEach(item => {
-                item.addEventListener("click", () => {
-                    button.childNodes[0].textContent = item.textContent;
+                item.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const text = this.textContent;
+                    console.log("정렬 선택:", text);
+
+                    // 버튼 텍스트 변경
+                    newButton.childNodes[0].textContent = text;
+
+                    // 메뉴 닫기
                     menu.classList.remove("open");
-                    handleSort(item.textContent);
+
+                    // 정렬 실행
+                    handleSort(text);
                 });
             });
 
-            document.addEventListener("click", (e) => {
-                if (!e.target.closest(".sort_dropdown_button")) {
+            // ⭐ 외부 클릭 시 메뉴 닫기
+            document.addEventListener("click", function(e) {
+                if (!newButton.contains(e.target) && !menu.contains(e.target)) {
                     menu.classList.remove("open");
                 }
             });
+        }
+
+
+
+        function handleSort(type) {
+            console.log("정렬 실행:", type);
+            let dataToSort = storeData;
+            if (currentPanelFilter) {
+                dataToSort = storeData.filter(store => store.tags.includes(currentPanelFilter));
+            }
+
+            let sorted = [...dataToSort];
+
+            if (type === "가나다순") {
+                sorted.sort((a, b) => a.name.localeCompare(b.name, 'ko-KR'));
+            }
+            else if (type === "별점순") {
+                sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            }
+            else if (type === "리뷰개수순") {
+                sorted.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
+            }
+
+            console.log("정렬 결과:", sorted);
+            renderStoreList(sorted);
+        }
+
+        function loadRestaurantDataFromDB() {
+            fetch('/api/restaurants')
+                .then(res => res.json())
+                .then(data => {
+                    console.log("식당 데이터 로드 완료:", data);
+                    storeData = data;
+
+                    storeData.forEach(store => {
+                        createMarker(store.lat, store.lng, store.tags, store.id);
+                    });
+
+                    if (currentPanel === "search") {
+                        renderStoreList(storeData);
+                    }
+                })
+                .catch(err => console.error("식당 데이터 로드 실패:", err));
+        }
+
+        function renderStoreList(list) {
+            const container = document.getElementById("store_list");
+            const template = document.getElementById("store_card_template");
+
+            if (!container || !template) return;
+
+            container.innerHTML = "";
+
+            if (!list || list.length === 0) {
+                container.innerHTML = `<p class="no_result" style="text-align:center; padding:20px;">검색 결과가 없습니다.</p>`;
+                return;
+            }
+
+            list.forEach(store => {
+                const clone = template.content.cloneNode(true);
+                const card = clone.querySelector(".store_card");
+                card.dataset.id = store.id;
+
+                const imgEl = clone.querySelector(".store_img");
+                imgEl.src = store.image || "../../static/img/play.png";
+
+                clone.querySelector(".store_name").textContent = store.name;
+                clone.querySelector(".store_time").textContent = store.time;
+
+                const reviewBtn = clone.querySelector(".store_review");
+                reviewBtn.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    openReviewPanel("restaurant_reviews", store.id);
+                });
+
+                card.addEventListener("click", function() {
+                    openPanel("restaurant", store.id);
+                });
+
+                container.appendChild(clone);
+            });
+        }
+
+        function openReviewPanel(panelName, id) {
+            changePanel(panelName, id);
+        }
+
+        function runSearch() {
+            const input = document.getElementById("search_input");
+            if (!input) return;
+
+            const keyword = input.value.trim().toLowerCase();
+
+            if (!keyword) {
+                renderStoreList(storeData);
+                return;
+            }
+
+            const filtered = storeData.filter(store =>
+                store.name.toLowerCase().includes(keyword)
+            );
+            renderStoreList(filtered);
+        }
+
+        function initSearchPanel() {
+            const input = document.getElementById("search_input");
+            const button = document.querySelector(".search_button");
+
+            if (input) {
+                input.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") runSearch();
+                });
+            }
+
+            if (button) {
+                button.addEventListener("click", () => runSearch());
+            }
+
+            const panelFilters = document.querySelectorAll('.search_panel_filter');
+            console.log("패널 필터 개수:", panelFilters.length);
+
+            panelFilters.forEach(btn => {
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+
+                newBtn.addEventListener("click", function(e) {
+                    e.stopPropagation();
+                    const tag = this.getAttribute('data-filter');
+                    console.log("패널 필터 클릭:", tag);
+                    onFilterClick(tag, this);
+                });
+            });
+        }
+
+        function openPopup(message, onConfirm) {
+            const overlay = document.getElementById("globalPopup");
+            const msgEl = document.getElementById("globalPopupMessage");
+            const btn = document.getElementById("globalPopupConfirm");
+
+            if (!overlay || !msgEl || !btn) {
+                alert(message);
+                return;
+            }
+
+            msgEl.textContent = message;
+            overlay.style.display = "flex";
+
+            btn.onclick = () => {
+                overlay.style.display = "none";
+                if (typeof onConfirm === "function") {
+                    onConfirm();
+                }
+            };
         }
 
         function handleRegisterSubmit(event) {
@@ -377,7 +523,7 @@
             const formData = new FormData(form);
 
             fetch(form.action, {
-                method: form.method, // POST
+                method: form.method,
                 body: formData,
                 headers: { "X-Requested-With": "XMLHttpRequest" },
                 redirect: "follow"
@@ -386,193 +532,40 @@
                 const html = await res.text();
                 const panel = document.getElementById("panel");
 
-                // 🔹 1) 진짜 서버 오류 (500 등)
                 if (!res.ok && !res.redirected) {
                     openPopup("로그인 서버 오류");
                     return;
                 }
 
-                // 🔹 2) 로그인 실패 (아이디/비번 틀림)
                 if (!res.redirected && html.includes('id="loginError"')) {
                     panel.innerHTML = html;
                     return;
                 }
 
-                // 🔹 3) 여기까지 왔으면 = 로그인 성공
-                IS_AUTHENTICATED = true;  // ⭐ 이 줄 추가!
+                IS_AUTHENTICATED = true;
                 openPopup("로그인에 성공하였습니다!", () => changePanel("search"));
             })
             .catch(err => openPopup("네트워크 오류 발생"));
             return false;
         }
 
-
-        function handleSort(type) {
-            let sorted = [...storeData];
-            if (type === "가나다순") sorted.sort((a, b) => a.name.localeCompare(b.name));
-            renderStoreList(sorted);
-        }
-
-        // 백엔드 데이터 가져오기
-        function loadRestaurantDataFromDB() {
-            fetch('/api/restaurants')
-                .then(res => res.json())
-                .then(data => {
-                    console.log("식당 데이터 로드 완료:", data);
-                    storeData = data;
-
-                    storeData.forEach(store => {
-                        createMarker(store.lat, store.lng, store.tags, store.id);
-                    });
-
-                    // 패널이 열려있으면 리스트 렌더링 시도
-                    if (currentPanel === "search") {
-                        renderStoreList(storeData);
-                    }
-                })
-                .catch(err => console.error("식당 데이터 로드 실패:", err));
-        }
-
-        // 리스트 렌더 함수 (Null 체크 추가로 오류 해결)
-        function renderStoreList(list) {
-            const container = document.getElementById("store_list");
-            const template = document.getElementById("store_card_template");
-
-            // ★ 중요: 패널이 아직 로드되지 않았으면 여기서 중단 (오류 방지)
-            if (!container || !template) return;
-
-            container.innerHTML = "";
-
-            if (!list || list.length === 0) {
-                container.innerHTML = `<p class="no_result" style="text-align:center; padding:20px;">검색 결과가 없습니다.</p>`;
-                return;
-            }
-
-            list.forEach(store => {
-                const clone = template.content.cloneNode(true);
-                const card = clone.querySelector(".store_card");
-                card.dataset.id = store.id;
-
-                const imgEl = clone.querySelector(".store_img");
-                if (store.image) imgEl.src = store.image;
-                else imgEl.src = "../../static/img/play.png";
-
-                clone.querySelector(".store_name").textContent = store.name;
-                clone.querySelector(".store_time").textContent = store.time;
-
-                const reviewBtn = clone.querySelector(".store_review");
-                reviewBtn.addEventListener("click", function (e) {
-                    e.stopPropagation();
-                    openReviewPanel("restaurant_reviews", store.id);
-                });
-
-                // 카드 클릭 시 상세 이동
-                card.addEventListener("click", function() {
-                    openPanel("restaurant", store.id);
-                });
-
-                container.appendChild(clone);
-            });
-        }
-
-        function openReviewPanel(panelName, id) {
-            changePanel(panelName, id);
-        }
-
-        function runSearch() {
-            // ★ 원본 코드대로 search_input 사용
-            const input = document.getElementById("search_input");
-            if (!input) return; // 요소 없으면 중단
-
-            const keyword = input.value.trim().toLowerCase();
-
-            if (!keyword) {
-                renderStoreList(storeData);
-                return;
-            }
-
-            const filtered = storeData.filter(store =>
-                store.name.toLowerCase().includes(keyword)
-            );
-            renderStoreList(filtered);
-        }
-
-        function initSearchPanel() {
-            const input = document.getElementById("search_input");
-            const button = document.querySelector(".search_button");
-
-            // ★ 중요: 요소가 존재할 때만 이벤트 연결
-            if (input) {
-                input.addEventListener("keydown", (e) => {
-                    if (e.key === "Enter") runSearch();
-                });
-            }
-
-            if (button) {
-                button.addEventListener("click", () => runSearch());
-            }
-
-            // 패널 내부 필터 버튼 연결
-            const panelFilters = document.querySelectorAll('.search_panel_filter');
-            panelFilters.forEach(btn => {
-                btn.addEventListener("click", function() {
-                    // 태그 추론 (간단 버전)
-                    let tag = "play";
-                    if (this.src.includes("restaurant")) tag = "restaurant";
-                    else if (this.src.includes("cafe")) tag = "cafe";
-
-                    onFilterClick(tag, this);
-                });
-            });
-        }
-
-        function openPopup(message, onConfirm) {
-            const overlay = document.getElementById("globalPopup");
-            const msgEl = document.getElementById("globalPopupMessage");
-            const btn = document.getElementById("globalPopupConfirm");
-
-            if (!overlay || !msgEl || !btn) {
-                alert(message); // HTML 없으면 alert로 대체
-                return;
-            }
-
-            msgEl.textContent = message;
-            overlay.style.display = "flex";
-
-            btn.onclick = () => {
-                overlay.style.display = "none";
-                if (typeof onConfirm === "function") {
-                    onConfirm();
-                }
-            };
-        }
         function bindReviewFormEvent(restaurantId) {
             const form = document.getElementById("reviewForm");
+            if (!form) return;
 
-            // 방어 코드: 폼이 없으면 중단
-            if (!form) {
-                console.error("리뷰 폼을 찾을 수 없습니다.");
-                return;
-            }
-
-            // 기존에 붙어있을 수 있는 이벤트를 제거하고 새로 붙이는 것이 안전하지만,
-            // 패널이 새로 그려지므로 addEventListener만 해도 됩니다.
             form.addEventListener("submit", function(e) {
-                e.preventDefault(); // 🚫 중요: 페이지 이동(새로고침)을 막습니다!
-                submitReviewAjax(form, restaurantId); // 대신 AJAX 함수 실행
+                e.preventDefault();
+                submitReviewAjax(form, restaurantId);
             });
         }
 
-        // 3. AJAX 전송 함수 (신규 추가)
         function submitReviewAjax(form, restaurantId) {
             const formData = new FormData(form);
 
             fetch(form.action, {
                 method: 'POST',
                 body: formData,
-                headers: {
-                    'X-CSRFToken': getCsrfToken()
-                }
+                headers: { 'X-CSRFToken': getCsrfToken() }
             })
             .then(res => res.json())
             .then(data => {
@@ -580,9 +573,7 @@
                     openPopup("리뷰가 성공적으로 등록되었습니다!", function() {
                         changePanel('restaurant_reviews', restaurantId);
                     });
-
                 } else {
-                    // 실패했을 때도 팝업 띄우기 (콜백 없음)
                     let errorMsg = "입력 정보를 확인해주세요.";
                     if(data.errors) {
                         errorMsg += "\n" + JSON.stringify(data.errors);
@@ -596,19 +587,17 @@
             });
         }
 
-        // 게시판
         function bindPostFormEvent() {
             const form = document.getElementById("postForm");
             const fileInput = document.getElementById("imageUpload");
 
             if (!form) return;
 
-            // (1) 파일 선택 시 미리보기 기능
             if (fileInput) {
                 fileInput.addEventListener('change', function(e) {
-                    const file = e.target.files[0]; // 하나만 선택
+                    const file = e.target.files[0];
                     const preview = document.getElementById('filePreview');
-                    preview.innerHTML = ''; // 기존 미리보기 초기화
+                    preview.innerHTML = '';
 
                     if (file && file.type.startsWith('image/')) {
                         const reader = new FileReader();
@@ -626,37 +615,31 @@
                 });
             }
 
-            // (2) 폼 제출 가로채기 (AJAX)
             form.addEventListener("submit", function(e) {
-                e.preventDefault(); // 페이지 이동 막기
+                e.preventDefault();
                 submitPostAjax(form);
             });
         }
 
-        // 3. 파일 입력 초기화 함수 (미리보기 X버튼 클릭 시)
         function clearImageInput() {
             const fileInput = document.getElementById("imageUpload");
             const preview = document.getElementById('filePreview');
-            if (fileInput) fileInput.value = ''; // 파일 값 비우기
-            if (preview) preview.innerHTML = ''; // 미리보기 지우기
+            if (fileInput) fileInput.value = '';
+            if (preview) preview.innerHTML = '';
         }
 
-        // 4. 게시글 AJAX 전송 함수 (신규)
         function submitPostAjax(form) {
             const formData = new FormData(form);
 
             fetch(form.action, {
                 method: 'POST',
                 body: formData,
-                headers: {
-                    'X-CSRFToken': getCsrfToken()
-                }
+                headers: { 'X-CSRFToken': getCsrfToken() }
             })
-            .then(res => res.json()) // 백엔드에서 JSON 응답을 줘야 함
+            .then(res => res.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // 성공 화면 표시
-                    showSuccessScreen(data.post_id); // 백엔드에서 post_id를 보내주면 좋음
+                    showSuccessScreen(data.post_id);
                 } else {
                     alert("작성 실패: " + JSON.stringify(data.errors));
                 }
@@ -667,23 +650,18 @@
             });
         }
 
-        // 5. 성공 화면 전환 함수
         function showSuccessScreen(postId) {
             document.getElementById('boardHeader').style.display = 'none';
             document.getElementById('postForm').style.display = 'none';
 
             const successContainer = document.getElementById('successContainer');
-            successContainer.style.display = 'flex'; // flex로 해야 중앙 정렬됨
+            successContainer.style.display = 'flex';
 
-            // '게시글 보기' 버튼에 클릭 이벤트 연결
             const viewBtn = document.getElementById('btnViewPost');
             if(postId && viewBtn) {
-                // 상세 페이지 패널 로드 (board_detail 뷰가 필요함)
-                // 만약 상세 페이지가 없다면 그냥 목록으로 이동하도록 설정
                 viewBtn.onclick = () => changePanel('board');
             }
         }
-
 
         function getCsrfToken() {
             let cookieValue = null;
