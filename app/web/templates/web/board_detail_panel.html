@@ -30,7 +30,6 @@
                     <span class="detail_date">{{ post.created_at|date:"Y-m-d H:i" }}</span>
                 </div>
                 <div class="detail_stats">
-                    <span class="detail_views">조회 {{ post.views|default:0 }}</span>
                     <span class="detail_likes">좋아요 <span id="likeCount">{{ post.likes.count }}</span></span>
                 </div>
             </div>
