@@ -266,3 +266,11 @@
   display: flex;
   justify-content: center;
 }
+
+.panel_case.register_panel .register_top .back_button,
+.panel_case.register_panel .register_top .back_button span {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    writing-mode: horizontal-tb !important;
+    white-space: nowrap !important;
+}
