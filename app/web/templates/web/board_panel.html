@@ -16,7 +16,7 @@
             {% if posts %}
                 {% for post in posts %}
                     <!-- 클릭 시 내용 확장/축소 -->
-                    <div class="post_item" onclick="togglePostExpand(this, {{ post.id }})">
+                    <div class="post_item" onclick="changePanel('board/{{ post.id }}')">
                         <div class="post_header">
                             <div class="post_header_left">
                                 <h3 class="post_title">

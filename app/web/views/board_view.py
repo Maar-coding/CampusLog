@@ -7,11 +7,6 @@ from web.models import Post
 from web.forms import PostForm
 from django.http import JsonResponse
 
-def board(request):
-    """메인 게시판 페이지"""
-    return render(request, 'web/board_panel.html')
-
-
 def board_list(request):
     """
     GET /board/list : 게시판 목록 조회
@@ -35,7 +30,7 @@ def board_list(request):
             messages.error(request, '게시글 작성에 실패했습니다.')
 
     # GET 요청: 게시글 목록 조회
-    posts = Post.objects.select_related('author')
+    posts = Post.objects.select_related('author').all()  # ← .all() 추가
 
     # 검색 기능
     query = request.GET.get('q')
@@ -51,7 +46,10 @@ def board_list(request):
     page_obj = paginator.get_page(page)
 
     context = {
-        'posts': page_obj,
+        'posts': page_obj,                              # ← 기존
+        'page_obj': page_obj,                           # ← 추가
+        'paginator': paginator,                         # ← 추가
+        'is_paginated': page_obj.has_other_pages(),     # ← 추가
         'query': query,
     }
 
