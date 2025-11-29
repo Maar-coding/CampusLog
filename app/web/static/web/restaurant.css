@@ -287,12 +287,12 @@
   margin-bottom: 4px;
 }
 
-.star {
+.star_ {
   font-size: 13px;
   color: #e5e7eb;
 }
 
-.star.on {
+.star_.on {
   color: #facc15;
 }
 

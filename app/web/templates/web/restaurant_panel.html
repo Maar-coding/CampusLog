@@ -90,11 +90,14 @@
           <div class="rating_star">
             {% for i in "12345" %}
             <span
-              class="star {% if forloop.counter <= restaurant.avg_rating|default:0 %}on{% endif %}"
+              class="star_ {% if forloop.counter <= restaurant.avg_rating|default:0 %}on{% endif %}"
               >★</span
             >
             {% endfor %}
           </div>
+
+
+
           <div class="rating_count">
             {{ restaurant.review_count }}개의 리뷰
           </div>
@@ -137,7 +140,7 @@
             <span class="review_stars">
               {% for i in "12345" %}
               <span
-                class="star {% if forloop.counter <= review.rating %}on{% endif %}"
+                class="star_ {% if forloop.counter <= review.rating %}on{% endif %}"
                 >★</span
               >
               {% endfor %}
