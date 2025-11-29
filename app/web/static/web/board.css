@@ -1,7 +1,7 @@
 /* 게시판 전체 컨테이너 */
 .board_container {
     position: relative;
-    padding: 24px;
+    padding: 10px;
     height: calc(100vh - 48px);
     display: flex;
     flex-direction: column;

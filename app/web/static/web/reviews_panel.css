@@ -1,6 +1,6 @@
 /* 후기 전체 컨테이너 */
 .reviews_container {
-    padding: 24px;
+    padding: 10px;
     height: calc(100vh - 48px);
     display: flex;
     flex-direction: column;

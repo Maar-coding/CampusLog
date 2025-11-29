@@ -85,7 +85,7 @@
       <div class="rating_summary">
         <div class="rating_main">
           <div class="rating_score">
-            {{ restaurant.avg_rating|default:"-" }}
+            {{ restaurant.avg_rating|floatformat|default:"-" }}
           </div>
           <div class="rating_star">
             {% for i in "12345" %}
@@ -132,11 +132,11 @@
         </a>
       </div>
 
-      <ul class="review_list">
+      <ul class="review_list_">
         {% for review in reviews %}
-        <li class="review_item">
+        <li class="review_item_">
           <div class="review_header">
-            <span class="review_title">{{ review.title }}</span>
+            <span class="review_title_">{{ review.title }}</span>
             <span class="review_stars">
               {% for i in "12345" %}
               <span

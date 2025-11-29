@@ -29,9 +29,7 @@
                                 </span>
                                 <!-- 메뉴 버튼 (본인 글일 경우 삭제 등) -->
                                 {% if request.user == post.author %}
-                                <button class="post_menu_button" onclick="togglePostMenu({{ post.id }}, event)">
-                                    <span class="post_menu_dots">⋮</span>
-                                </button>
+
                                 <div class="post_menu_dropdown" id="postMenu{{ post.id }}" style="display: none;">
                                     <button class="menu_item" style="color:red;" onclick="deletePost({{ post.id }})">삭제하기</button>
                                 </div>
@@ -110,56 +108,5 @@
 
 <script>
     // 1. 게시글 확장/축소 토글 (클래스명 수정됨: .post_content)
-    function togglePostExpand(element, postId) {
-        const content = element.querySelector('.post_content');
-        const images = document.getElementById('postImages' + postId);
-        const indicator = document.getElementById('postImageIndicator' + postId);
 
-        const isExpanded = element.classList.contains('expanded');
-
-        if (isExpanded) {
-            element.classList.remove('expanded');
-            // CSS(.post_item:not(.expanded) .post_content)에서 line-clamp 처리됨
-            if(images) images.style.display = 'none';
-            if(indicator) indicator.style.display = 'inline';
-        } else {
-            element.classList.add('expanded');
-            if(images) images.style.display = 'block';
-            if(indicator) indicator.style.display = 'none';
-        }
-    }
-
-    // 2. 메뉴 토글
-    function togglePostMenu(postId, event) {
-        event.stopPropagation();
-        const menu = document.getElementById('postMenu' + postId);
-
-        document.querySelectorAll('.post_menu_dropdown').forEach(m => {
-            if(m !== menu) m.style.display = 'none';
-        });
-
-        if (menu.style.display === 'block') {
-            menu.style.display = 'none';
-        } else {
-            menu.style.display = 'block';
-        }
-    }
-
-    // 3. 삭제 기능
-    function deletePost(postId) {
-        event.stopPropagation();
-        if(confirm("정말 삭제하시겠습니까?")) {
-            // TODO: 삭제 API 호출 (fetch)
-            alert("삭제 기능은 백엔드 구현이 필요합니다.");
-        }
-    }
-
-    // 메뉴 외부 클릭 시 닫기
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.post_menu_button')) {
-            document.querySelectorAll('.post_menu_dropdown').forEach(m => {
-                m.style.display = 'none';
-            });
-        }
-    });
 </script>
