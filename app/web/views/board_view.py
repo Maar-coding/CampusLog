@@ -30,7 +30,7 @@ def board_list(request):
             messages.error(request, '게시글 작성에 실패했습니다.')
 
     # GET 요청: 게시글 목록 조회
-    posts = Post.objects.select_related('author').all()  # ← .all() 추가
+    posts = Post.objects.select_related('author').all().order_by('-created_at')  # ← .all() 추가
 
     # 검색 기능
     query = request.GET.get('q')
