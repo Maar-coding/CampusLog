@@ -120,9 +120,9 @@
 
 /* 플로팅 글쓰기 버튼 */
 .floating_write_button {
-    position: absolute;
+    position: fixed;
     bottom: 24px;
-    right: 24px;
+    right: calc(100vw - 375px + 24px);
     height: 40px;
     padding: 0 12px;
     background-color: #ffffff;
