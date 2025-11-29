@@ -227,6 +227,20 @@
         }
 
         function changePanel(panelName, id = null) {
+            // ⭐ 게시글 쓰기 시 로그인 체크 (쿠키 대신 IS_AUTHENTICATED 사용)
+            if (panelName === 'board/write' && !IS_AUTHENTICATED) {
+                alert('로그인이 필요합니다!');
+                changePanel('login');
+                return;
+            }
+
+            // ⭐ 리뷰 쓰기도 체크
+            if (panelName.includes('reviews/write') && !IS_AUTHENTICATED) {
+                alert('로그인이 필요합니다!');
+                changePanel('login');
+                return;
+            }
+
             const panel = document.getElementById("panel");
             currentPanel = panelName;
 
@@ -239,11 +253,10 @@
             else if (panelName === "restaurant_reviews" && id) url = `/restaurant/${id}/reviews`;
             else if (panelName === "board") {
                 if (id) {
-                    // id가 숫자인지 확인 (숫자면 상세페이지, 아니면 페이지네이션 쿼리)
                     if (!isNaN(id)) {
-                        url = `/board/${id}`; // 상세 페이지 (/board/1)
+                        url = `/board/${id}`;
                     } else {
-                        url = `/board${id}`;  // 페이지네이션 (/board?page=2)
+                        url = `/board${id}`;
                     }
                 }
             }
@@ -256,6 +269,8 @@
                 })
                 .catch(err => console.error(`${panelName} 로딩 실패`, err));
         }
+
+
 
         function initPanelByName(panelName, id) {
             if (panelName === "search") {
@@ -371,19 +386,26 @@
                 const html = await res.text();
                 const panel = document.getElementById("panel");
 
+                // 🔹 1) 진짜 서버 오류 (500 등)
                 if (!res.ok && !res.redirected) {
                     openPopup("로그인 서버 오류");
                     return;
                 }
+
+                // 🔹 2) 로그인 실패 (아이디/비번 틀림)
                 if (!res.redirected && html.includes('id="loginError"')) {
                     panel.innerHTML = html;
                     return;
                 }
+
+                // 🔹 3) 여기까지 왔으면 = 로그인 성공
+                IS_AUTHENTICATED = true;  // ⭐ 이 줄 추가!
                 openPopup("로그인에 성공하였습니다!", () => changePanel("search"));
             })
             .catch(err => openPopup("네트워크 오류 발생"));
             return false;
         }
+
 
         function handleSort(type) {
             let sorted = [...storeData];
