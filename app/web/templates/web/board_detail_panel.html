@@ -11,11 +11,11 @@
                 <h1 class="board_title">게시글 상세</h1>
             </div>
             <div class="header_right">
-                <button class="menu_button" onclick="toggleMenu()">
+                <button class="menu_button" id="menuButton">
                     <span class="menu_dots">⋮</span>
                 </button>
                 <div class="menu_dropdown" id="menuDropdown" style="display: none;">
-                    <button class="menu_item" onclick="reportPost()">신고하기</button>
+                    <button class="menu_item" id="reportBtn">신고하기</button>
                 </div>
             </div>
         </div>
@@ -31,7 +31,7 @@
                 </div>
                 <div class="detail_stats">
                     <span class="detail_views">조회 {{ post.views|default:0 }}</span>
-                    <span class="detail_likes">좋아요 23</span>
+                    <span class="detail_likes">좋아요 <span id="likeCount">{{ post.likes.count }}</span></span>
                 </div>
             </div>
 
@@ -51,8 +51,8 @@
 
             <!-- 액션 버튼 -->
             <div class="detail_actions">
-                <button class="action_btn like_btn" onclick="toggleLike()">
-                    <span class="like_icon">♡</span>
+                <button class="action_btn like_btn" id="likeBtn">
+                    <span class="like_icon" id="likeIcon">♡</span>
                     좋아요
                 </button>
             </div>
@@ -60,60 +60,30 @@
             <!-- 댓글 섹션 -->
             <div class="comments_section">
                 <div class="comments_header">
-                    <h3 class="comments_title">댓글 <span class="comments_count">0</span></h3>
+                    <h3 class="comments_title">댓글 <span class="comments_count" id="commentCount">{{ post.comments.count }}</span></h3>
                 </div>
 
                 <!-- 댓글 작성 -->
                 <div class="comment_write">
                     <textarea class="comment_input" id="commentInput" placeholder="댓글을 입력하세요..."></textarea>
-                    <button class="comment_submit" onclick="addComment()">댓글 작성</button>
+                    <button class="comment_submit" id="commentSubmitBtn">댓글 작성</button>
                 </div>
 
                 <!-- 댓글 목록 -->
                 <div class="comments_list" id="commentsList">
-                    <div class="no_comments">첫 번째 댓글을 작성해보세요!</div>
+                    {% if post.comments.all %}
+                        {% for comment in post.comments.all %}
+                        <div class="comment_item">
+                            <div class="comment_author">{{ comment.author.username }}</div>
+                            <div class="comment_content">{{ comment.content }}</div>
+                            <div class="comment_date">{{ comment.created_at|date:"Y.m.d H:i" }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no_comments">첫 번째 댓글을 작성해보세요!</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-// 메뉴 토글
-function toggleMenu() {
-    const dropdown = document.getElementById('menuDropdown');
-    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-}
-
-// 좋아요 토글
-function toggleLike() {
-    alert('좋아요 기능은 추후 구현 예정입니다.');
-}
-
-// 댓글 작성
-function addComment() {
-    const input = document.getElementById('commentInput');
-    if(input.value.trim()) {
-        alert('댓글 기능은 추후 구현 예정입니다.');
-        input.value = '';
-    } else {
-        alert('댓글을 입력해주세요.');
-    }
-}
-
-// 신고하기
-function reportPost() {
-    alert('신고 기능은 추후 구현 예정입니다.');
-    document.getElementById('menuDropdown').style.display = 'none';
-}
-
-// 메뉴 외부 클릭 시 닫기
-document.addEventListener('click', function(e) {
-    const menuButton = document.querySelector('.menu_button');
-    const dropdown = document.getElementById('menuDropdown');
-    
-    if (menuButton && dropdown && !menuButton.contains(e.target) && !dropdown.contains(e.target)) {
-        dropdown.style.display = 'none';
-    }
-});
-</script>

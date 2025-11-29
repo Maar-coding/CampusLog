@@ -37,6 +37,10 @@ urlpatterns = [
     # 게시판 패널용 경로 추가
     path('board_panel', views.board_list, name='board_panel'),
 
+    # 좋아요/댓글 API
+    path('board/<int:postid>/like', views.post_like, name='post_like'),
+    path('board/<int:postid>/comment', views.comment_create, name='comment_create'),
+
 
 
     path('select-restaurant', views.restaurant_select, name='restaurant_select'),

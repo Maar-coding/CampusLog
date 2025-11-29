@@ -112,32 +112,14 @@ class Review(models.Model):
         # 없다면 username을 사용합니다.
         return self.author.username
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 class Post(models.Model):
     """
     통합 커뮤니티 게시글 모델
-    카테고리 구분 없이 하나의 게시판으로 운영
     """
-
-    # 1. '누가' 썼는지 (User와 N:1 관계)
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
-
-
     title = models.CharField(max_length=255)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -145,3 +127,35 @@ class Post(models.Model):
 
     def __str__(self):
         return f"{self.title} (작성자: {self.author.username})"
+
+
+class PostLike(models.Model):
+    """
+    게시글 좋아요 모델
+    """
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('post', 'user')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} likes {self.post.title}"
+
+
+class Comment(models.Model):
+    """
+    댓글 모델
+    """
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.author.username}: {self.content[:20]}"

@@ -97,3 +97,55 @@ def post_write_form(request):
         form = PostForm()
 
     return render(request, 'web/board_upload.html', {'form': form})
+
+
+from django.views.decorators.http import require_POST
+from django.db.models import Count, Exists, OuterRef
+
+
+@require_POST
+@login_required
+def post_like(request, postid):
+    """
+    POST /board/{postid}/like : 좋아요 토글
+    """
+    post = get_object_or_404(Post, pk=postid)
+
+    from web.models import PostLike
+    like, created = PostLike.objects.get_or_create(post=post, user=request.user)
+
+    if not created:
+        like.delete()
+        return JsonResponse({'status': 'unliked', 'like_count': post.likes.count()})
+
+    return JsonResponse({'status': 'liked', 'like_count': post.likes.count()})
+
+
+@require_POST
+@login_required
+def comment_create(request, postid):
+    """
+    POST /board/{postid}/comment : 댓글 작성
+    """
+    post = get_object_or_404(Post, pk=postid)
+    content = request.POST.get('content', '').strip()
+
+    if not content:
+        return JsonResponse({'status': 'fail', 'message': '내용을 입력하세요.'}, status=400)
+
+    from web.models import Comment
+    comment = Comment.objects.create(
+        post=post,
+        author=request.user,
+        content=content
+    )
+
+    return JsonResponse({
+        'status': 'success',
+        'comment': {
+            'id': comment.id,
+            'author': comment.author.username,
+            'content': comment.content,
+            'created_at': comment.created_at.strftime('%Y.%m.%d %H:%M')
+        }
+    })
