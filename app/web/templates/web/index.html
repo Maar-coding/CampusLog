@@ -229,14 +229,14 @@
         function changePanel(panelName, id = null) {
             // ⭐ 게시글 쓰기 시 로그인 체크 (쿠키 대신 IS_AUTHENTICATED 사용)
             if (panelName === 'board/write' && !IS_AUTHENTICATED) {
-                alert('로그인이 필요합니다!');
+                openPopup('로그인이 필요합니다!');
                 changePanel('login');
                 return;
             }
 
             // ⭐ 리뷰 쓰기도 체크
             if (panelName.includes('reviews/write') && !IS_AUTHENTICATED) {
-                alert('로그인이 필요합니다!');
+                openPopup('로그인이 필요합니다!');
                 changePanel('login');
                 return;
             }
