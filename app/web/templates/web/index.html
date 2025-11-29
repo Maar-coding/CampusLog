@@ -224,12 +224,18 @@
                     url = !isNaN(id) ? `/board/${id}` : `/board${id}`;
                 }
             }
+            else if (panelName.startsWith("board/") && panelName !== "board/write") {
+                    const postId = panelName.split('/')[1];
+                    url = `/board/${postId}`;
+                    id = postId;
+                }
+
 
             fetch(url)
                 .then(res => res.text())
                 .then(html => {
                     panel.innerHTML = html;
-                    initPanelByName(panelName, id);
+                    initPanelByName(panelName, id); // ⭐ id 전달!
                 })
                 .catch(err => console.error(`${panelName} 로딩 실패`, err));
         }
@@ -250,11 +256,103 @@
             else if (panelName === "board/write") {
                 bindPostFormEvent();
             }
+            // 게시글 상세 패널 초기화 추가
+            else if (panelName.startsWith("board/") && !panelName.includes("write") && id) {
+                setTimeout(() => initBoardDetail(id), 100);
+            }
         }
 
-        // ⭐ 패널 필터 클릭
+        // 게시글 상세 초기화 함수 (getCsrfToken 함수 바로 위에 추가)
+        function initBoardDetail(postId) {
+            console.log("게시글 상세 초기화:", postId);
+
+            // 좋아요 버튼
+            const likeBtn = document.getElementById('likeBtn');
+            if (likeBtn) {
+                likeBtn.addEventListener('click', function() {
+                    if (!IS_AUTHENTICATED) {
+                        openPopup('로그인이 필요합니다!');
+                        return;
+                    }
+
+                    fetch(`/board/${postId}/like`, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': getCsrfToken() }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        const icon = document.getElementById('likeIcon');
+                        const count = document.getElementById('likeCount');
+
+                        if (data.status === 'liked') {
+                            icon.textContent = '♥';
+                            icon.style.color = '#ff6b6b';
+                        } else {
+                            icon.textContent = '♡';
+                            icon.style.color = '';
+                        }
+                        count.textContent = data.like_count;
+                    })
+                    .catch(err => console.error('좋아요 오류:', err));
+                });
+                console.log("좋아요 버튼 연결됨");
+            }
+
+            // 댓글 작성 버튼
+            const commentSubmitBtn = document.getElementById('commentSubmitBtn');
+            if (commentSubmitBtn) {
+                commentSubmitBtn.addEventListener('click', function() {
+                    if (!IS_AUTHENTICATED) {
+                        openPopup('로그인이 필요합니다!');
+                        return;
+                    }
+
+                    const input = document.getElementById('commentInput');
+                    const content = input.value.trim();
+
+                    if (!content) {
+                        alert('댓글을 입력해주세요.');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('content', content);
+
+                    fetch(`/board/${postId}/comment`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-CSRFToken': getCsrfToken() }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            input.value = '';
+
+                            const commentsList = document.getElementById('commentsList');
+                            const noComments = commentsList.querySelector('.no_comments');
+                            if (noComments) noComments.remove();
+
+                            const newComment = document.createElement('div');
+                            newComment.className = 'comment_item';
+                            newComment.innerHTML = `
+                                <div class="comment_author">${data.comment.author}</div>
+                                <div class="comment_content">${data.comment.content}</div>
+                                <div class="comment_date">${data.comment.created_at}</div>
+                            `;
+                            commentsList.appendChild(newComment);
+
+                            const commentCount = document.getElementById('commentCount');
+                            commentCount.textContent = parseInt(commentCount.textContent) + 1;
+                        }
+                    })
+                    .catch(err => console.error('댓글 작성 오류:', err));
+                });
+                console.log("댓글 버튼 연결됨");
+            }
+        }
+
         function onFilterClick(tag, clickedEl) {
-            console.log("필터 클릭:", tag); // 디버깅
+            console.log("필터 클릭:", tag);
             const filters = document.querySelectorAll('.search_panel_filter');
 
             if (currentPanelFilter === tag) {
