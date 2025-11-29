@@ -25,10 +25,10 @@
         <img src="../../static/img/search.svg" class="search_img_button">
     </section>
     <section class="search_panel_filter_case">
-        <img src="../../static/img/restaurant.png" class="search_panel_filter" onclick="onFilterClick('restaurant', this)">
-        <img src="../../static/img/cafe.png" class="search_panel_filter" onclick="onFilterClick('cafe', this)">
-        <img src="../../static/img/play.png" class="search_panel_filter" onclick="onFilterClick('play', this)">
-        
+        <img src="../../static/img/restaurant.png" class="search_panel_filter" data-filter="restaurant">
+        <img src="../../static/img/cafe.png" class="search_panel_filter" data-filter="cafe">
+        <img src="../../static/img/play.png" class="search_panel_filter" data-filter="play">
+
         <!-- 드롭다운 -->
         <div class="sort_dropdown_button" id="sort_dropdown_button">가나다순
             <img src="../../static/img/right_arrow.svg" class="dropdown_arrow">
@@ -56,7 +56,4 @@
             </div>
         </div>
     </template>
-
-    
-    
-</div>  
+</div>

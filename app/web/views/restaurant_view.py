@@ -46,28 +46,39 @@ def menu_create(request, restaurant_id):
     return render(request, 'web/menu_create.html', context)
 
 def restaurant_list_api(request):
-    restaurants = Restaurant.objects.all()
+    restaurants = Restaurant.objects.annotate(
+        avg_rating=Avg('reviews__rating'),
+        review_count=Count('reviews')
+    )
 
     data = []
     for r in restaurants:
-        # 2. 카테고리에 따라 이미지 자동 선택 (프론트엔드 로직을 백엔드로 이동)
         img_src = "../../static/img/restaurant.png"
         if r.category == 'cafe':
             img_src = "../../static/img/cafe.png"
         elif r.category == 'play':
             img_src = "../../static/img/play.png"
 
-        # 3. 프론트엔드 'storeData' 구조와 똑같이 만듭니다.
+        opening_time = getattr(r, 'open_time', None)
+        closing_time = getattr(r, 'close_time', None)
+
+        if opening_time and closing_time:
+            time_str = f"{opening_time.strftime('%H:%M')} ~ {closing_time.strftime('%H:%M')}"
+        else:
+            time_str = "영업시간 미정"
+
         data.append({
             'id': r.id,
             'name': r.name,
             'lat': r.lat,
             'lng': r.lng,
             'image': img_src,
-            'tags': [r.category]  # 프론트엔드는 배열 형태의 tags를 원함
+            'tags': [r.category],
+            'rating': float(r.avg_rating or 0),
+            'reviewCount': r.review_count,
+            'time': time_str
         })
 
-    # 4. JSON으로 변환하여 반환
     return JsonResponse(data, safe=False)
 
 
