@@ -55,17 +55,28 @@ class Restaurant(models.Model):
     @property
     def is_open(self):
         """
-            템플릿에서 'restaurant.is_open'으로 현재 영업 상태 확인
+        현재 시간이 영업시간 안인지 + 오늘이 휴무일인지 체크
         """
-        now = timezone.now().time()
-        today_weekday = timezone.now().strftime('%a').upper()  # MON, TUE ...
+        # 현재 시간(타임존 반영)
+        now = timezone.localtime()
+        current_time = now.time()
 
-            # 오늘이 휴무일인지 확인
-        if self.holiday == today_weekday:
-          return False
+        # 오늘 요일을 DAY_CHOICES 코드(MON, TUE...) 로 변환
+        weekday_codes = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
+        today_code = weekday_codes[now.weekday()]   # 0=월 -> 'MON'
 
-        # 영업 시간 확인
-        return self.open_time <= now <= self.close_time
+        # 1) 휴무 요일이면 무조건 영업 종료
+        if self.holiday and self.holiday == today_code:
+            return False
+
+        # 2) 일반적인 경우: 같은 날 안에서 영업 종료 (예: 09:00 ~ 22:00)
+        if self.open_time < self.close_time:
+            return self.open_time <= current_time < self.close_time
+
+        # 3) 자정을 넘기는 경우 (예: 18:00 ~ 02:00)
+        #    → open_time 이후 자정까지 또는 자정~close_time 까지
+        else:
+            return current_time >= self.open_time or current_time < self.close_time
 
         # 참고: 템플릿의 'avg_rating'과 'review_count'는
         # 뷰(views.py)에서 annotate를 통해 동적으로 추가하는 것이 효율적입니다.
