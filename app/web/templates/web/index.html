@@ -775,6 +775,87 @@
             }
             return cookieValue;
         }
+        /* ==========================================
+           [추가] 리뷰 패널 관련 함수들 (index.html로 이동)
+           ========================================== */
+
+        // 1. 리뷰 확장/축소 토글
+        function toggleReviewExpand(element, reviewId) {
+            const content = element.querySelector('.review_content');
+            const images = document.getElementById('reviewImages' + reviewId);
+            const indicator = document.getElementById('imageIndicator' + reviewId);
+
+            // element가 null일 경우 방어
+            if (!element) return;
+
+            const isExpanded = element.classList.contains('expanded');
+
+            if (isExpanded) {
+                element.classList.remove('expanded');
+                if (content) {
+                    content.style.whiteSpace = "nowrap";
+                    content.style.overflow = "hidden";
+                    content.style.textOverflow = "ellipsis";
+                }
+                if (images) images.style.display = 'none';
+                if (indicator) indicator.style.display = 'inline';
+            } else {
+                element.classList.add('expanded');
+                if (content) {
+                    content.style.whiteSpace = "normal";
+                    content.style.overflow = "visible";
+                }
+                if (images) images.style.display = 'block';
+                if (indicator) indicator.style.display = 'none';
+            }
+        }
+
+        // 2. 메뉴 토글 (점 세개 버튼)
+        function toggleReviewMenu(reviewId, event) {
+            event.stopPropagation(); // 클릭 이벤트가 부모(toggleReviewExpand)로 퍼지는 것 방지
+            const menu = document.getElementById('reviewMenu' + reviewId);
+
+            // 다른 열린 메뉴들 닫기
+            document.querySelectorAll('.review_menu_dropdown').forEach(m => {
+                if (m !== menu) m.style.display = 'none';
+            });
+
+            if (menu) {
+                if (menu.style.display === 'block') {
+                    menu.style.display = 'none';
+                } else {
+                    menu.style.display = 'block';
+                }
+            }
+        }
+
+        // 3. 신고 기능
+        function reportReview(reviewId, event) {
+            event.stopPropagation();
+            alert("신고가 접수되었습니다.");
+            // 추후 AJAX로 서버 전송
+        }
+
+        // 4. 삭제 기능
+        function deleteReview(reviewId, event) {
+            event.stopPropagation();
+            if (confirm("정말 삭제하시겠습니까?")) {
+                // TODO: 삭제 API 호출 로직 (fetch)
+                alert("삭제되었습니다.");
+            }
+        }
+
+        // 5. 메뉴 외부 클릭 시 닫기 (전역 리스너)
+        document.addEventListener('click', function(e) {
+            // 메뉴 버튼을 누른 게 아니라면 모든 드롭다운 닫기
+            if (!e.target.closest('.review_menu_button') && !e.target.closest('.post_menu_button')) {
+                document.querySelectorAll('.review_menu_dropdown, .post_menu_dropdown').forEach(m => {
+                    m.style.display = 'none';
+                });
+            }
+        });
+
+
     </script>
 </body>
 </html>
