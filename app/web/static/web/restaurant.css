@@ -1,6 +1,6 @@
 /* ===== 공통: 왼쪽 패널(모달) 영역 ===== */
 .restaurant_inner {
-  padding: 28px 28px 28px;   /* 위쪽 여백 넉넉하게 */
+  padding: 10px 10px 10px;   /* 위쪽 여백 넉넉하게 */
   height: 100%;
   overflow-y: auto;
   box-sizing: border-box;
@@ -25,6 +25,7 @@
   display: flex;
   align-items: center;
   margin-bottom: 12px;
+  padding-left: 10px;
 }
 
 /* 로그인/회원가입과 통일된 뒤로가기 버튼 스타일 */
@@ -40,6 +41,7 @@
   color: #9ca3af;
   cursor: pointer;
   transition: color 0.15s ease, transform 0.08s ease;
+  white-space: nowrap;
 }
 
 .restaurant_top .back_button .back_icon {
@@ -268,7 +270,7 @@
 }
 
 .rating_main {
-  width: 90px;
+  width: 95px;
   flex-shrink: 0;
   text-align: center;
 }

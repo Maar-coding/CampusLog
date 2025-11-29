@@ -46,28 +46,39 @@ def menu_create(request, restaurant_id):
     return render(request, 'web/menu_create.html', context)
 
 def restaurant_list_api(request):
-    restaurants = Restaurant.objects.all()
+    restaurants = Restaurant.objects.annotate(
+        avg_rating=Avg('reviews__rating'),
+        review_count=Count('reviews')
+    )
 
     data = []
     for r in restaurants:
-        # 2. 카테고리에 따라 이미지 자동 선택 (프론트엔드 로직을 백엔드로 이동)
         img_src = "../../static/img/restaurant.png"
         if r.category == 'cafe':
             img_src = "../../static/img/cafe.png"
         elif r.category == 'play':
             img_src = "../../static/img/play.png"
 
-        # 3. 프론트엔드 'storeData' 구조와 똑같이 만듭니다.
+        opening_time = getattr(r, 'open_time', None)
+        closing_time = getattr(r, 'close_time', None)
+
+        if opening_time and closing_time:
+            time_str = f"{opening_time.strftime('%H:%M')} ~ {closing_time.strftime('%H:%M')}"
+        else:
+            time_str = "영업시간 미정"
+
         data.append({
             'id': r.id,
             'name': r.name,
             'lat': r.lat,
             'lng': r.lng,
             'image': img_src,
-            'tags': [r.category]  # 프론트엔드는 배열 형태의 tags를 원함
+            'tags': [r.category],
+            'rating': float(r.avg_rating or 0),
+            'reviewCount': r.review_count,
+            'time': time_str
         })
 
-    # 4. JSON으로 변환하여 반환
     return JsonResponse(data, safe=False)
 
 
@@ -207,29 +218,25 @@ def restaurant_reviews(request, id):
 
 @login_required
 def review_write_form(request, id):
-    """
-    GET/POST /restaurant/{id}/reviews/write : 리뷰 작성
-    - 로그인한 사용자만 접근 가능
-    """
     restaurant = get_object_or_404(Restaurant, pk=id)
 
     if request.method == 'POST':
-        form = ReviewForm(request.POST, request.FILES)
-
+        form = ReviewForm(request.POST, request.FILES)  # 이미지 포함
         if form.is_valid():
             review = form.save(commit=False)
-            review.author = request.user
             review.restaurant = restaurant
+            review.author = request.user
             review.save()
 
-            # 성공 시 리뷰 목록으로 바로 리다이렉트
-            messages.success(request, "리뷰가 성공적으로 작성되었습니다!")
-            return redirect('restaurant_reviews', id=id)
+            # ⭐ [수정] 성공 시 JSON 응답 반환
+            return JsonResponse({'status': 'success', 'message': '리뷰가 등록되었습니다.'})
+        else:
+            # 실패 시 에러 메시지를 포함한 HTML을 다시 렌더링하거나,
+            # JSON으로 에러를 보낼 수도 있습니다. 여기선 간단히 폼 에러 반환.
+            return JsonResponse({'status': 'fail', 'errors': form.errors}, status=400)
+
     else:
         form = ReviewForm()
 
-    context = {
-        'form': form,
-        'restaurant': restaurant
-    }
+    context = {'form': form, 'restaurant': restaurant}
     return render(request, 'web/reviews_write_form.html', context)

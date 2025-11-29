@@ -1,13 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="../../static/web/board.css">
-</head>
-<body>
+{% load static %}
 
-<!-- 왼쪽 패널 영역 (이 div 안에 코딩하기) -->
 <div class="panel_case">
     <div class="board_container">
         <!-- 뒤로가기 버튼과 게시판 헤더 -->
@@ -19,11 +11,11 @@
                 <h1 class="board_title">게시글 상세</h1>
             </div>
             <div class="header_right">
-                <button class="menu_button" onclick="toggleMenu()">
+                <button class="menu_button" id="menuButton">
                     <span class="menu_dots">⋮</span>
                 </button>
                 <div class="menu_dropdown" id="menuDropdown" style="display: none;">
-                    <button class="menu_item" onclick="reportPost()">신고하기</button>
+                    <button class="menu_item" id="reportBtn">신고하기</button>
                 </div>
             </div>
         </div>
@@ -32,33 +24,34 @@
         <div class="post_detail">
             <!-- 게시글 헤더 -->
             <div class="detail_header">
-                <h2 class="detail_title" id="detailTitle">게시글 제목</h2>
+                <h2 class="detail_title">{{ post.title }}</h2>
                 <div class="detail_meta">
-                    <span class="detail_author" id="detailAuthor">작성자</span>
-                    <span class="detail_date" id="detailDate">2024-01-15 14:30</span>
+                    <span class="detail_author">{{ post.author.username }}</span>
+                    <span class="detail_date">{{ post.created_at|date:"Y-m-d H:i" }}</span>
                 </div>
                 <div class="detail_stats">
-                    <span class="detail_views">조회 <span id="detailViews">145</span></span>
-                    <span class="detail_likes">좋아요 <span id="detailLikes">23</span></span>
+                    <span class="detail_likes">좋아요 <span id="likeCount">{{ post.likes.count }}</span></span>
                 </div>
             </div>
 
             <!-- 게시글 내용 -->
             <div class="detail_content">
-                <div class="content_text" id="detailContent">
-                    게시글 내용이 여기에 표시됩니다.
+                <div class="content_text">
+                    {{ post.content|linebreaksbr }}
                 </div>
 
                 <!-- 첨부 이미지 -->
-                <div class="content_images" id="detailImages">
-                    <!-- 이미지들이 동적으로 추가됩니다 -->
+                {% if post.images %}
+                <div class="content_images">
+                    <img src="{{ post.images.url }}" alt="게시글 이미지" class="content_image">
                 </div>
+                {% endif %}
             </div>
 
             <!-- 액션 버튼 -->
             <div class="detail_actions">
-                <button class="action_btn like_btn" onclick="toggleLike()">
-                    <span class="like_icon">♡</span>
+                <button class="action_btn like_btn" id="likeBtn">
+                    <span class="like_icon" id="likeIcon">♡</span>
                     좋아요
                 </button>
             </div>
@@ -66,385 +59,30 @@
             <!-- 댓글 섹션 -->
             <div class="comments_section">
                 <div class="comments_header">
-                    <h3 class="comments_title">댓글 <span class="comments_count" id="commentsCount">0</span></h3>
+                    <h3 class="comments_title">댓글 <span class="comments_count" id="commentCount">{{ post.comments.count }}</span></h3>
                 </div>
 
                 <!-- 댓글 작성 -->
                 <div class="comment_write">
                     <textarea class="comment_input" id="commentInput" placeholder="댓글을 입력하세요..."></textarea>
-                    <button class="comment_submit" onclick="addComment()">댓글 작성</button>
+                    <button class="comment_submit" id="commentSubmitBtn">댓글 작성</button>
                 </div>
 
                 <!-- 댓글 목록 -->
                 <div class="comments_list" id="commentsList">
-                    <!-- 댓글들이 동적으로 추가됩니다 -->
+                    {% if post.comments.all %}
+                        {% for comment in post.comments.all %}
+                        <div class="comment_item">
+                            <div class="comment_author">{{ comment.author.username }}</div>
+                            <div class="comment_content">{{ comment.content }}</div>
+                            <div class="comment_date">{{ comment.created_at|date:"Y.m.d H:i" }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no_comments">첫 번째 댓글을 작성해보세요!</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-// 게시글 데이터 (실제로는 서버에서 받아옴)
-const postData = {
-    id: 1,
-    title: '캐퍼스 맛집 추천해주세요!',
-    content: '학교 근처에 맛있는 식당이 있나요? 추천 부탁드립니다. 특히 한식, 중식, 일식 등 다양한 종류의 음식을 즐길 수 있는 곳이면 좋겠어요.\n\n개인적으로는 가성비 좋은 곳을 선호하는데, 혹시 추천해주실 만한 곳이 있다면 댓글로 알려주세요!',
-    author: '맛집탐험가',
-    createdAt: '2024-01-15 14:30',
-    views: 145,
-    likes: 23,
-    isLiked: false,
-    images: [
-        // 예시 이미지 (실제로는 서버에서 받아옴)
-    ]
-};
-
-// 댓글 데이터
-let comments = [
-    {
-        id: 1,
-        author: '맛집러버',
-        content: '학교 앞 한식집 추천드려요! 가격도 저렴하고 맛도 좋아요.',
-        createdAt: '2024-01-15 15:20',
-        likes: 3,
-        isLiked: false,
-        replies: [
-            {
-                id: 101,
-                author: '맛집탐험가',
-                content: '어디 한식집인가요? 자세히 알려주세요!',
-                createdAt: '2024-01-15 15:45'
-            }
-        ]
-    },
-    {
-        id: 2,
-        author: '학생식당러버',
-        content: '학생식당도 나쁘지 않아요. 저렴하고 양도 많아요!',
-        createdAt: '2024-01-15 16:10',
-        likes: 1,
-        isLiked: false,
-        replies: []
-    }
-];
-
-let replyingTo = null; // 대댓글 작성 중인 댓글 ID
-
-// 페이지 로드 시 게시글 데이터 표시
-document.addEventListener('DOMContentLoaded', function() {
-    loadPostDetail();
-    loadComments();
-});
-
-// 게시글 상세 정보 로드
-function loadPostDetail() {
-    document.getElementById('detailTitle').textContent = postData.title;
-    document.getElementById('detailAuthor').textContent = postData.author;
-    document.getElementById('detailDate').textContent = postData.createdAt;
-    document.getElementById('detailViews').textContent = postData.views;
-    document.getElementById('detailLikes').textContent = postData.likes;
-
-    // 내용 표시 (줄바꿈 처리)
-    const contentElement = document.getElementById('detailContent');
-    contentElement.innerHTML = postData.content.replace(/\n/g, '<br>');
-
-    // 이미지 표시
-    const imagesElement = document.getElementById('detailImages');
-    if (postData.images && postData.images.length > 0) {
-        postData.images.forEach(imageUrl => {
-            const img = document.createElement('img');
-            img.src = imageUrl;
-            img.className = 'content_image';
-            img.alt = '게시글 이미지';
-            imagesElement.appendChild(img);
-        });
-    }
-
-    // 좋아요 상태 업데이트
-    updateLikeButton();
-}
-
-// 좋아요 토글
-function toggleLike() {
-    postData.isLiked = !postData.isLiked;
-    postData.likes += postData.isLiked ? 1 : -1;
-
-    document.getElementById('detailLikes').textContent = postData.likes;
-    updateLikeButton();
-
-    // 실제 구현에서는 서버에 좋아요 상태 전송
-    console.log('좋아요 상태:', postData.isLiked);
-}
-
-// 좋아요 버튼 상태 업데이트
-function updateLikeButton() {
-    const likeBtn = document.querySelector('.like_btn');
-    const likeIcon = document.querySelector('.like_icon');
-
-    if (postData.isLiked) {
-        likeBtn.classList.add('liked');
-        likeIcon.textContent = '♥';
-    } else {
-        likeBtn.classList.remove('liked');
-        likeIcon.textContent = '♡';
-    }
-}
-
-// 댓글 로드
-function loadComments() {
-    const commentsList = document.getElementById('commentsList');
-    const commentsCount = document.getElementById('commentsCount');
-
-    commentsCount.textContent = comments.length;
-
-    if (comments.length === 0) {
-        commentsList.innerHTML = '<div class="no_comments">첫 번째 댓글을 작성해보세요!</div>';
-        return;
-    }
-
-    commentsList.innerHTML = comments.map(comment => `
-        <div class="comment_item">
-            <div class="comment_header">
-                <div class="comment_info">
-                    <span class="comment_author">${comment.author}</span>
-                    <span class="comment_date">${comment.createdAt}</span>
-                </div>
-                <div class="comment_menu">
-                    <button class="comment_menu_button" onclick="toggleCommentMenu(${comment.id})">
-                        <span class="comment_menu_dots">⋮</span>
-                    </button>
-                    <div class="comment_menu_dropdown" id="commentMenu${comment.id}" style="display: none;">
-                        <button class="menu_item" onclick="reportComment(${comment.id})">신고하기</button>
-                    </div>
-                </div>
-            </div>
-            <div class="comment_content">${comment.content}</div>
-            <div class="comment_actions">
-                <button class="comment_like_btn ${comment.isLiked ? 'liked' : ''}" onclick="toggleCommentLike(${comment.id})">
-                    <span class="comment_like_icon">${comment.isLiked ? '♥' : '♡'}</span>
-                    ${comment.likes}
-                </button>
-                <button class="comment_reply_btn" onclick="toggleReply(${comment.id})">
-                    답글
-                </button>
-            </div>
-
-            <!-- 대댓글 작성 영역 -->
-            <div class="reply_write" id="replyWrite${comment.id}" style="display: none;">
-                <textarea class="reply_input" id="replyInput${comment.id}" placeholder="답글을 입력하세요..."></textarea>
-                <div class="reply_buttons">
-                    <button class="reply_cancel" onclick="cancelReply(${comment.id})">취소</button>
-                    <button class="reply_submit" onclick="addReply(${comment.id})">답글 작성</button>
-                </div>
-            </div>
-
-            <!-- 대댓글 목록 -->
-            <div class="replies_list">
-                ${comment.replies.map(reply => `
-                    <div class="reply_item">
-                        <div class="reply_header">
-                            <span class="reply_author">${reply.author}</span>
-                            <span class="reply_date">${reply.createdAt}</span>
-                        </div>
-                        <div class="reply_content">${reply.content}</div>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-    `).join('');
-}
-
-// 댓글 추가
-function addComment() {
-    const commentInput = document.getElementById('commentInput');
-    const content = commentInput.value.trim();
-
-    if (!content) {
-        alert('댓글을 입력해주세요.');
-        return;
-    }
-
-    const newComment = {
-        id: comments.length + 1,
-        author: '사용자', // 실제로는 로그인한 사용자 정보
-        content: content,
-        createdAt: new Date().toLocaleString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        }).replace(/\. /g, '-').replace(/\./g, '').replace(', ', ' '),
-        likes: 0,
-        isLiked: false,
-        replies: []
-    };
-
-    comments.push(newComment);
-    commentInput.value = '';
-    loadComments();
-
-    // 실제 구현에서는 서버에 댓글 전송
-    console.log('댓글 추가:', newComment);
-}
-
-// 메뉴 토글
-function toggleMenu() {
-    const dropdown = document.getElementById('menuDropdown');
-    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-}
-
-// 메뉴 외부 클릭 시 닫기
-document.addEventListener('click', function(e) {
-    const menuButton = document.querySelector('.menu_button');
-    const dropdown = document.getElementById('menuDropdown');
-
-    if (!menuButton.contains(e.target) && !dropdown.contains(e.target)) {
-        dropdown.style.display = 'none';
-    }
-
-    // 댓글 메뉴 닫기
-    const commentMenuButtons = document.querySelectorAll('.comment_menu_button');
-    const commentMenus = document.querySelectorAll('.comment_menu_dropdown');
-
-    let clickedCommentMenu = false;
-    commentMenuButtons.forEach(button => {
-        if (button.contains(e.target)) {
-            clickedCommentMenu = true;
-        }
-    });
-
-    commentMenus.forEach(menu => {
-        if (menu.contains(e.target)) {
-            clickedCommentMenu = true;
-        }
-    });
-
-    if (!clickedCommentMenu) {
-        commentMenus.forEach(menu => {
-            menu.style.display = 'none';
-        });
-    }
-});
-
-// 신고하기
-function reportPost() {
-    document.getElementById('menuDropdown').style.display = 'none';
-    // 신고 페이지로 이동
-    console.log('신고하기 클릭');
-    // window.location.href = 'report.html';
-}
-
-// 댓글 메뉴 토글
-function toggleCommentMenu(commentId) {
-    const dropdown = document.getElementById(`commentMenu${commentId}`);
-    // 다른 댓글 메뉴 닫기
-    document.querySelectorAll('.comment_menu_dropdown').forEach(menu => {
-        if (menu.id !== `commentMenu${commentId}`) {
-            menu.style.display = 'none';
-        }
-    });
-    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-}
-
-// 댓글 신고하기
-function reportComment(commentId) {
-    document.getElementById(`commentMenu${commentId}`).style.display = 'none';
-    console.log('댓글 신고하기:', commentId);
-    // 신고 페이지로 이동
-}
-
-// Enter 키로 댓글 작성
-document.addEventListener('DOMContentLoaded', function() {
-    const commentInput = document.getElementById('commentInput');
-    commentInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            addComment();
-        }
-    });
-});
-
-// 댓글 좋아요 토글
-function toggleCommentLike(commentId) {
-    const comment = comments.find(c => c.id === commentId);
-    if (comment) {
-        comment.isLiked = !comment.isLiked;
-        comment.likes += comment.isLiked ? 1 : -1;
-        loadComments();
-
-        // 실제 구현에서는 서버에 좋아요 상태 전송
-        console.log('댓글 좋아요:', commentId, comment.isLiked);
-    }
-}
-
-// 대댓글 작성 토글
-function toggleReply(commentId) {
-    const replyWrite = document.getElementById(`replyWrite${commentId}`);
-    const isVisible = replyWrite.style.display !== 'none';
-
-    // 모든 대댓글 작성 영역 닫기
-    document.querySelectorAll('.reply_write').forEach(el => {
-        el.style.display = 'none';
-    });
-
-    if (!isVisible) {
-        replyWrite.style.display = 'block';
-        replyingTo = commentId;
-        document.getElementById(`replyInput${commentId}`).focus();
-    } else {
-        replyingTo = null;
-    }
-}
-
-// 대댓글 작성 취소
-function cancelReply(commentId) {
-    document.getElementById(`replyWrite${commentId}`).style.display = 'none';
-    document.getElementById(`replyInput${commentId}`).value = '';
-    replyingTo = null;
-}
-
-// 대댓글 추가
-function addReply(commentId) {
-    const replyInput = document.getElementById(`replyInput${commentId}`);
-    const content = replyInput.value.trim();
-
-    if (!content) {
-        alert('답글을 입력해주세요.');
-        return;
-    }
-
-    const comment = comments.find(c => c.id === commentId);
-    if (comment) {
-        const newReply = {
-            id: Date.now(), // 임시 ID
-            author: '사용자',
-            content: content,
-            createdAt: new Date().toLocaleString('ko-KR', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            }).replace(/\. /g, '-').replace(/\./g, '').replace(', ', ' ')
-        };
-
-        comment.replies.push(newReply);
-        replyInput.value = '';
-        cancelReply(commentId);
-        loadComments();
-
-        // 실제 구현에서는 서버에 대댓글 전송
-        console.log('대댓글 추가:', newReply);
-    }
-}
-
-// 뒤로가기 기능
-function goBack() {
-    window.history.back();
-}
-</script>
-
-</body>
-</html>

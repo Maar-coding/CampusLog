@@ -5,12 +5,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from web.models import Post
 from web.forms import PostForm
-
-
-def board(request):
-    """메인 게시판 페이지"""
-    return render(request, 'web/board_panel.html')
-
+from django.http import JsonResponse
 
 def board_list(request):
     """
@@ -35,7 +30,7 @@ def board_list(request):
             messages.error(request, '게시글 작성에 실패했습니다.')
 
     # GET 요청: 게시글 목록 조회
-    posts = Post.objects.select_related('author')
+    posts = Post.objects.select_related('author').all().order_by('-created_at')  # ← .all() 추가
 
     # 검색 기능
     query = request.GET.get('q')
@@ -51,7 +46,10 @@ def board_list(request):
     page_obj = paginator.get_page(page)
 
     context = {
-        'posts': page_obj,
+        'posts': page_obj,                              # ← 기존
+        'page_obj': page_obj,                           # ← 추가
+        'paginator': paginator,                         # ← 추가
+        'is_paginated': page_obj.has_other_pages(),     # ← 추가
         'query': query,
     }
 
@@ -79,10 +77,75 @@ def post_write_form(request):
     """
     GET /board/write : 게시글 작성 폼
     """
-    form = PostForm()
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
 
-    context = {
-        'form': form,
-    }
+            # JSON으로 성공 응답 보냄
+            return JsonResponse({
+                'status': 'success',
+                'post_id': post.id,
+                'message': '게시글이 등록되었습니다.'
+            })
+        else:
+            return JsonResponse({'status': 'fail', 'errors': form.errors}, status=400)
 
-    return render(request, 'web/board_upload.html', context)
+    else:
+        form = PostForm()
+
+    return render(request, 'web/board_upload.html', {'form': form})
+
+
+from django.views.decorators.http import require_POST
+from django.db.models import Count, Exists, OuterRef
+
+
+@require_POST
+@login_required
+def post_like(request, postid):
+    """
+    POST /board/{postid}/like : 좋아요 토글
+    """
+    post = get_object_or_404(Post, pk=postid)
+
+    from web.models import PostLike
+    like, created = PostLike.objects.get_or_create(post=post, user=request.user)
+
+    if not created:
+        like.delete()
+        return JsonResponse({'status': 'unliked', 'like_count': post.likes.count()})
+
+    return JsonResponse({'status': 'liked', 'like_count': post.likes.count()})
+
+
+@require_POST
+@login_required
+def comment_create(request, postid):
+    """
+    POST /board/{postid}/comment : 댓글 작성
+    """
+    post = get_object_or_404(Post, pk=postid)
+    content = request.POST.get('content', '').strip()
+
+    if not content:
+        return JsonResponse({'status': 'fail', 'message': '내용을 입력하세요.'}, status=400)
+
+    from web.models import Comment
+    comment = Comment.objects.create(
+        post=post,
+        author=request.user,
+        content=content
+    )
+
+    return JsonResponse({
+        'status': 'success',
+        'comment': {
+            'id': comment.id,
+            'author': comment.author.username,
+            'content': comment.content,
+            'created_at': comment.created_at.strftime('%Y.%m.%d %H:%M')
+        }
+    })

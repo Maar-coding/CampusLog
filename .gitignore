@@ -11,3 +11,5 @@ app/web/migrations
 .idea/
 
 *.iml
+
+app/media

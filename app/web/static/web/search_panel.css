@@ -1,214 +1,348 @@
+/* =========================================
+   전체 패널 레이아웃 (배경: 완전 흰색)
+   ========================================= */
+.panel_case {
+  width: 100%;
+  height: 100%;
+  padding: 24px 20px; /* 내부 여백 */
+  box-sizing: border-box;
+  background-color: #ffffff;
+  overflow-y: auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Malgun Gothic", sans-serif;
+  color: #333;
+}
+
+/* 스크롤바 디자인 (크롬/사파리) */
+.panel_case::-webkit-scrollbar {
+  width: 5px;
+}
+.panel_case::-webkit-scrollbar-track {
+  background: transparent;
+}
+.panel_case::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+
+
+/* =========================================
+   1. 로그인 영역 (버튼 색상: 파란색 포인트)
+   ========================================= */
+/* ===== 상단 로그인/회원가입 영역 레이아웃 ===== */
 .search_panel_login_case {
-    width: 328px;
-    margin: 28px auto;
-    display: flex;
-    align-items: center;
-    position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
 }
 
+/* 로고 스타일 (클릭 가능 표시) */
+.search_panel_logo {
+  height: 28px; /* 로고 크기 적당히 조절 */
+  cursor: pointer;
+  object-fit: contain;
+}
+
+/* 오른쪽 버튼들을 감싸는 박스 (가로 정렬) */
+.auth_action_box {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* 버튼 사이 간격 */
+}
+
+/* 1. 로그인 버튼 (파란색 채움) */
 .search_panel_login_button {
-    width: 80px;
-    height: 24px;
-    border-radius: 4px;
-    border: 1px solid #757575;
-    position: relative;
-    margin-right: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+  padding: 8px 16px;
+  background-color: #3b82f6;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
 }
 
+.search_panel_login_button:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+/* 2. 회원가입 버튼 (흰색 배경 + 파란 테두리) */
+.search_panel_register_button {
+  padding: 8px 16px;
+  background-color: #ffffff;
+  color: #3b82f6; /* 글자색 파랑 */
+  border: 1px solid #3b82f6; /* 테두리 파랑 */
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.search_panel_register_button:hover {
+  background-color: #eff6ff; /* 아주 연한 파랑 배경 */
+  transform: translateY(-2px);
+}
+
+/* 3. 로그인 후 멘트 */
 .search_panel_login_text {
-    color: #000000;
-    font-family: ABeeZee;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    position: absolute;
-    right: 0px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  margin: 0;
+  margin-right: 4px; /* 로그아웃 버튼과 간격 */
 }
 
+/* 4. 로그아웃 버튼 (작고 심플하게) */
+.search_panel_logout_button {
+  font-size: 12px;
+  color: #9ca3af; /* 회색 */
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.search_panel_logout_button:hover {
+  color: #4b5563; /* 호버 시 진한 회색 */
+}
+/* =========================================
+   1-2. 로고이미지
+   ========================================= */
+
+.search_panel_logo {
+  width: 80px;  /* 입력창 높이와 동일 */
+  height: 80px;
+  cursor: pointer; /* 마우스 올리면 손가락 모양 */
+  transition: all 0.2s ease;
+}
+
+/* =========================================
+   2. 헤더 영역 (게시판 버튼 + 검색창 + 돋보기 이미지 버튼)
+   ========================================= */
 .search_panel_header {
-    margin: 28px auto 0;
-    display: flex;
-    align-items: center;
-    position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
 }
 
 .community_button {
-    width: 80px;
-    height: 24px;
-    border-radius: 4px;
-    border: 1px solid #757575;
-    position: relative;
-    margin-left: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;  /* 마우스 올렸을 때(호버) 마우스포인터 모양 손가락 모양으로 바뀌기 */
+  height: 44px; /* 높이 고정 */
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6; /* 연한 회색 배경 */
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.community_button:hover {
+  background-color: #e5e7eb;
+  color: #111;
+}
+
+/* 검색 입력창 */
+.search {
+  flex: 1; /* 남은 공간 채우기 */
+  height: 44px;
+  padding: 0 16px;
+  border: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.search:focus {
+  background-color: #fff;
+  border-color: #3b82f6; /* 포커스 시 파란 테두리 */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ★ 중요: 검색 버튼 (이미지 태그 스타일링) */
+/* 이미지를 버튼처럼 보이게 만듭니다 */
+.search_img_button {
+  width: 44px;  /* 입력창 높이와 동일 */
+  height: 44px;
+  cursor: pointer; /* 마우스 올리면 손가락 모양 */
+  transition: all 0.2s ease;
+}
+
+.search_button:hover {
+  border-color: #3b82f6; /* 호버 시 테두리 파란색 */
+  background-color: #eff6ff; /* 아주 연한 파란 배경 */
+  transform: scale(1.05); /* 살짝 커지는 효과 */
+}
+
+
+/* =========================================
+   3. 필터 및 정렬 (이미지 아이콘 버튼들)
+   ========================================= */
+.search_panel_filter_case {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding-bottom: 4px;
+  position: relative
+}
+
+/* ★ 중요: 필터 아이콘 (이미지 태그 스타일링) */
+/* restaurant.png, cafe.png 등을 동그란 버튼으로 만듭니다 */
+.search_panel_filter {
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search_panel_filter:hover {
+  transform: translateY(-3px); /* 위로 둥실 떠오름 */
+}
+
+.search_panel_filter:active {
+  transform: scale(0.95); /* 클릭 시 눌리는 효과 */
+}
+
+/* 정렬 드롭다운 버튼 */
+.sort_dropdown_button {
+  margin-left: auto; /* 오른쪽 끝으로 밀기 */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  position: relative;
+  }
+
+.sort_dropdown_button:hover {
+  background-color: #f3f4f6;
+  color: #111;
 }
 
 .dropdown_arrow {
-    width: auto;
-    height: 12px;
-    transform: rotate(90deg); /* 오른쪽으로 90도 회전  */
-    position: absolute;
-    right: 8px;
+  width: 12px;
+  height: 12px;
+  opacity: 0.5;
 }
 
-.search {
-    width: 148px;
-    height: 32px;
-    position: absolute;
-    right: 68px;
-    color: #000000;
-    font-family: ABeeZee;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
-}
-
-.search_panel_search_button {
-    width: 32px;
-    height: 32px;
-    position: absolute;
-    right: 24px;
-}
-
-.search_panel_filter_case {
-    height: 32px;
-    position: relative;
-    margin: 24px 0 0 135px;
-    display: flex;
-    align-items: center;
-}
-
-.search_panel_filter {
-    width: 32px;
-    height: 32px;
-    margin-right: 8px;
-}
-
-.blurred-filter {
-    opacity: 0.4;
-}
-
-.dropdown {
-    position: relative;
-}
-
-.sort_dropdown_button {
-    width: 88px;
-    height: 20px;
-    border-radius: 4px;
-    border: 1px solid #757575;
-    position: absolute;
-    right: 24px;
-    margin: 0;
-    padding-left: 8px;
-    display: flex;
-    align-items: center;
-    box-sizing: border-box;
-    font-size: 12px;
-    font-weight: 400;
-    color: #000000;
-    cursor: pointer;  /* 마우스 올렸을 때(호버) 마우스포인터 모양 손가락 모양으로 바뀌기 */
-}
-
+/* 드롭다운 메뉴 (숨김/표시는 JS 제어) */
 .sort_dropdown_menu {
-    width: 88px;
-    position: absolute;
-    top: 100%; /* dropdown_button 바로 아래 */
-    right: 24px;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;  /* 자식 요소 세로로 정렬 */
-    box-sizing: border-box;  /* 패딩, 테두리가 크기에 영향 주지 않기 */
-    list-style: none;  /* 드롭다운 스타일 제거 */
-    z-index: 20;       /* 요소가 겹쳤을 때 위에 보이기 */
-    max-height: 0;     /* 최대 높이 0 (가렸다가 나중에 보여주기 위함) */
-    overflow: hidden;  /* 요소 안보이게 */
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 8px;
+  list-style: none;
+  z-index: 100;
+  min-width: 120px;
 }
 
 .sort_dropdown_menu.open {
-    transition: max-height 1.0s ease-in;  /* 0.7초에 걸쳐서 최대 높이 변경 (부드럽게 애니메이션) */
-    max-height: 100vh;  /* 최대 높이 변경 (드롭다운이 내려오도록) */
+  display: block !important;
 }
 
 .dropdown_list {
-    width: 100%;
-    height: 20px;
-    background: #ffffff;
-    font-size: 12px;
-    font-weight: 400;
-    color: #000000;
-    border: 1px solid #757575;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    cursor: pointer;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
 .dropdown_list:hover {
-    background-color: #f0f0f0;
+  background-color: #f3f4f6;
 }
 
+/* =========================================
+   4. 식당 리스트 (카드 디자인)
+   ========================================= */
 #store_list {
-    margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .store_card {
-    width: 328px;
-    height: 104px;
-    border: 1px solid #000;
-    margin: 0 auto 16px;
-    display: flex;
-    align-items: center;
-    padding: 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  background-color: #ffffff;
+  padding: 16px;
+  border-radius: 16px;
+
+  /* 카드 그림자 (깊이감) */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
+.store_card:hover {
+  transform: translateY(-2px); /* 호버 시 위로 살짝 */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-color: #e5e7eb;
+}
+
+/* 카드 내 이미지 */
 .store_img {
-    width: 80px;
-    height: 80px;
+  width: 72px;
+  height: 72px;
+  object-fit: cover; /* 비율 유지하며 꽉 채움 */
+  margin-right: 16px;
 }
 
+/* 카드 내 텍스트 정보 */
 .store_info_case {
-    width: 208px;
-    height: 80px;
-    margin-left: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
 }
 
 .store_name {
-    color: #000;
-    font-family: "Meera Inimai";
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 24px;
-    margin: 0 0 8px 0;
-    cursor: pointer;
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.3;
 }
 
 .store_time {
-    color: #000;
-    font-family: ABeeZee;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 24px;
-    margin: 0 0 4px 0;
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
 }
 
 .store_review {
-    color: #2E49E1;
-    font-family: ABeeZee;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 24px;
-    margin: 0;
-    cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #3b82f6; /* 포인트 컬러와 통일 */
+  margin: 4px 0 0 0;
+  cursor: pointer;
+}
+
+.store_review:hover {
+  text-decoration: underline;
+}
+
+/* 템플릿 태그 숨김 */
+template {
+  display: none;
 }

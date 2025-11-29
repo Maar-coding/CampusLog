@@ -110,7 +110,7 @@ class PostForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        fields = ['title', 'content']
+        fields = ['title', 'content', 'images']  # ← images 추가!
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -121,4 +121,8 @@ class PostForm(forms.ModelForm):
                 'rows': 10,
                 'placeholder': '내용을 입력하세요'
             }),
+            'images': forms.FileInput(attrs={  # ← 추가
+                'class': 'form-control',
+                'accept': 'image/*'
+            })
         }

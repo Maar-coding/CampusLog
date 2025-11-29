@@ -23,6 +23,7 @@
     display: flex;
     align-items: center;
     margin-bottom: 8px;
+    writing-mode: horizontal-tb;
 }
 
 /* 뒤로가기 버튼 – 로그인과 동일 스타일 */
@@ -38,6 +39,13 @@
     color: #9ca3af;
     cursor: pointer;
     transition: color 0.15s ease, transform 0.08s ease;
+    white-space: nowrap;
+    writing-mode: horizontal-tb;
+}
+
+.register_top .back_button span:not(.back_icon) {
+    display: inline-block;
+    white-space: nowrap;
 }
 
 .register_top .back_button .back_icon {
@@ -257,4 +265,12 @@
 .popup_buttons {
   display: flex;
   justify-content: center;
+}
+
+.panel_case.register_panel .register_top .back_button,
+.panel_case.register_panel .register_top .back_button span {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    writing-mode: horizontal-tb !important;
+    white-space: nowrap !important;
 }
