@@ -37,6 +37,7 @@
     color: #9ca3af;
     cursor: pointer;
     transition: color 0.15s ease, transform 0.08s ease;
+    white-space: nowrap;
 }
 
 .login_top .back_button .back_icon {
