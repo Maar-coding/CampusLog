@@ -25,6 +25,7 @@
   display: flex;
   align-items: center;
   margin-bottom: 12px;
+  padding-left: 10px;
 }
 
 /* 로그인/회원가입과 통일된 뒤로가기 버튼 스타일 */
@@ -40,6 +41,7 @@
   color: #9ca3af;
   cursor: pointer;
   transition: color 0.15s ease, transform 0.08s ease;
+  white-space: nowrap;
 }
 
 .restaurant_top .back_button .back_icon {
