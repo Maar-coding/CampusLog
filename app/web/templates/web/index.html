@@ -757,7 +757,7 @@
 
             const viewBtn = document.getElementById('btnViewPost');
             if(postId && viewBtn) {
-                viewBtn.onclick = () => changePanel('board');
+                viewBtn.onclick = () => changePanel(`board/${postId}`);
             }
         }
 

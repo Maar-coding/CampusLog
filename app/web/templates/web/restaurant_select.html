@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>메뉴 등록 - 식당 선택</title>
+    <title>전체 업체 목록</title>
     <style>
         body { font-family: sans-serif; background-color: #f8f9fa; padding: 20px; }
         .panel_case { max-width: 800px; margin: 0 auto; background-color: #fff; border-radius: 8px; padding: 24px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -25,7 +25,7 @@
 </head>
 <body>
     <div class="panel_case">
-        <h2>어떤 식당의 메뉴를 등록하시겠습니까?</h2>
+        <h2>업체 목록</h2>
 
         <ul class="res_list">
             {% for r in restaurants %}
@@ -37,12 +37,12 @@
                 <a href="{% url 'menu_create' r.id %}" class="btn_select">메뉴 등록하기</a>
             </li>
             {% empty %}
-            <li style="text-align: center; padding: 20px;">등록된 식당이 없습니다.</li>
+            <li style="text-align: center; padding: 20px;">등록된 업체가 없습니다.</li>
             {% endfor %}
         </ul>
 
         <div style="margin-top: 20px; text-align: right;">
-            <a href="{% url 'restaurant_create' %}" style="color: #666;">+ 새 식당 등록하러 가기</a>
+            <a href="{% url 'restaurant_create' %}" style="color: #666;">+ 새 업체 등록하러 가기</a>
         </div>
     </div>
 </body>

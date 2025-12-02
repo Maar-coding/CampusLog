@@ -47,7 +47,7 @@ class RestaurantForm(forms.ModelForm):
 
         # 폼 필드에 대한 추가 설정 (라벨 한글화)
         labels = {
-            'name': '식당 이름',
+            'name': '업체 이름',
             'address': '주소',
             'open_time': '오픈 시간',
             'close_time': '마감 시간',
